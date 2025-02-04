@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "964732274965",
+    "project_id": "pethaven-321a3",
+    "storage_bucket": "pethaven-321a3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964732274965:android:16079a8aa8f4957485c11c",
+        "android_client_info": {
+          "package_name": "com.example.pet_haven"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9GwJRjVCuRGv4gbWIuD561Qhvh8k487U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
