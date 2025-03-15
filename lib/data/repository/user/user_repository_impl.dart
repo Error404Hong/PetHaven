@@ -25,14 +25,17 @@ class UserRepoImpl extends UserRepo {
   }
 
   @override
-  Future<void> login(String email, String password) async {
+  Future<bool> login(String email, String password) async {
     try {
       await firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      print("hello");
+      return true;
     } catch (e) {
       debugPrint("Error logging in: $e");
+      return false;
       // throw CustomException("Error encountered when logging in");
     }
   }

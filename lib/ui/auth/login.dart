@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import '../component/custom_auth_painter.dart';
+import '../../data/repository/user/user_repository_impl.dart';
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
 
@@ -10,8 +10,48 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  UserRepoImpl userRepo = UserRepoImpl();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  var _passwordError = "";
+  bool isLoading = false;
+  var showPass = true;
+
+  void _showPass(bool visibility){
+    setState(() {
+      showPass = !visibility;
+    });
+  }
+
+  void _navigateToHome(){
+    context.go("/home");
+  }
+
+  Future<void> login(context) async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      final bool success = await userRepo.login(email, password);
+      // Navigate to home or dashboard on successful login
+      if(success){
+        _navigateToHome();
+      }
+    } catch (e) {
+      debugPrint("Error logging in: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed. Please try again.")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   void _navigateToRegister() {
     context.go("/register");
@@ -61,7 +101,7 @@ class _LoginState extends State<Login> {
                           borderRadius: BorderRadius.circular(10),
                           child: TextField(
                             focusNode: _emailFocusNode,
-                            // controller: _emailController,
+                            controller: _emailController,
                             decoration: InputDecoration(
                               labelText: "Email",
                               // errorText: _emailError.isEmpty ? null : _emailError,
@@ -82,8 +122,8 @@ class _LoginState extends State<Login> {
                           borderRadius: BorderRadius.circular(10),
                           child: TextField(
                             focusNode: _passwordFocusNode,
-                            // obscureText: showPass,
-                            // controller: _passwordController,
+                            obscureText: showPass,
+                            controller: _passwordController,
                             decoration: InputDecoration(
                               labelText: "Password",
                               prefixIcon: const Icon(Icons.password),
@@ -91,11 +131,11 @@ class _LoginState extends State<Login> {
                                 onPressed: () => (),
                                 icon: const Icon(Icons.remove_red_eye),
                               ),
-                              // errorText:
-                              // _passwordError.isEmpty ? null : _passwordError,
-                              // border: OutlineInputBorder(
-                              //   borderRadius: BorderRadius.circular(10),
-                              // ),
+                              errorText:
+                              _passwordError.isEmpty ? null : _passwordError,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           ),
                         ),
@@ -118,7 +158,7 @@ class _LoginState extends State<Login> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => (),
+                            onPressed: () => login(context),
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0XFF211f1f),
                                 shape: RoundedRectangleBorder(
