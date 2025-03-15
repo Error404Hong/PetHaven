@@ -16,7 +16,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  // This widget is the root of your applicationz.
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
             primaryColor: const Color(0xfff7f6ee),
             scaffoldBackgroundColor: const Color(0xfff7f6ee),
         ),
-        home: NavRouter(initialRoute:"/login")
+        home: NavRouter(initialRoute:"/homePage")
     );
   }
 }
