@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'appbar.dart';
 import 'product-box.dart';
+import 'package:pet_haven/data/model/user.dart' as user_model;
 
 class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+  final user_model.User userData;
+  const ProductList({super.key, required this.userData});
 
   @override
   State<ProductList> createState() => _ProductListState();

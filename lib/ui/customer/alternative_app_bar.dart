@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_profile.dart';
 
-
-
 class AlternativeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String pageTitle;
   const AlternativeAppBar({super.key, required this.pageTitle});

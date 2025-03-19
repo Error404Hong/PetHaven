@@ -1,14 +1,136 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../data/model/user.dart';
+import '../component/snackbar.dart';
 import 'alternative_app_bar.dart';
+import '../../data/model/event.dart';
+import 'dart:io';
 
 class ActivityDetails extends StatefulWidget {
-  const ActivityDetails({super.key});
+  final Event event;
+  final User user;
+  const ActivityDetails({super.key, required this.event, required this.user});
 
   @override
   State<ActivityDetails> createState() => _ActivityDetailsState();
 }
 
 class _ActivityDetailsState extends State<ActivityDetails> {
+  late Event event;
+  String? organizerName;
+  bool hasJoined = false;
+
+  @override
+  void initState() {
+    super.initState();
+    event = widget.event;
+    getOrganizerData();
+    checkIfUserJoined();
+  }
+
+  Future<void> getOrganizerData() async {
+    var db = FirebaseFirestore.instance;
+    String oid = event.organizerID;
+
+    try {
+      QuerySnapshot querySnapshot = await db.collection('Users').get();
+
+      for (var doc in querySnapshot.docs) {
+        var userData = doc.data() as Map<String, dynamic>;
+
+        if(userData["id"] == oid) {
+          setState(() {
+            organizerName = userData["name"];
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Widget buildParticipantIcons() {
+    int currentParticipants = int.parse(event.participantsCount);
+    int eventMax = int.parse(event.capacity);
+
+    return Row(
+      children: [
+        // Green icons for current participants
+        ...List.generate(
+            currentParticipants,
+                (index) => Icon(Icons.pets, color: Colors.green[600])
+        ),
+
+        // Grey icons for remaining spots
+        ...List.generate(
+            eventMax - currentParticipants,
+                (index) => Icon(Icons.pets, color: Colors.grey)
+        ),
+      ],
+    );
+  }
+
+  Future<void> checkIfUserJoined() async {
+    var db = FirebaseFirestore.instance;
+    String? userId = widget.user.id;
+
+    DocumentSnapshot eventSnapshot =
+    await db.collection('Events').doc(event.id).get();
+
+    List<dynamic> currentParticipants = eventSnapshot["participants"] ?? [];
+
+    setState(() {
+      hasJoined = currentParticipants.contains(userId);
+    });
+  }
+
+  void joinEvent() async {
+    if (hasJoined) return;
+
+    try {
+      var db = FirebaseFirestore.instance;
+      String? userId = widget.user.id;
+      DocumentReference eventRef = db.collection('Events').doc(event.id);
+
+      await db.runTransaction((transaction) async {
+        DocumentSnapshot snapshot = await transaction.get(eventRef);
+
+        if (!snapshot.exists) {
+          throw Exception("Event does not exist!");
+        }
+
+        List<dynamic> currentParticipants = snapshot["participants"] ?? [];
+        int currentCount = int.parse(snapshot["participantsCount"]);
+        int maxCapacity = int.parse(snapshot["capacity"]);
+
+        if (currentParticipants.contains(userId)) {
+          throw Exception("User already joined the event!");
+        }
+
+        if (currentCount >= maxCapacity) {
+          throw Exception("Event is full!");
+        }
+
+        transaction.update(eventRef, {
+          "participants": FieldValue.arrayUnion([userId]),
+          "participantsCount": (currentCount + 1).toString(),
+        });
+
+        setState(() {
+          event.participantsCount = (currentCount + 1).toString();
+          hasJoined = true;
+        });
+
+        showSnackbar(context, "Join success! See you there!", Colors.green);
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,23 +155,23 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                   borderRadius: BorderRadius.circular(10),
                   child: Container(
                     height: 230,
-                    decoration: const BoxDecoration(
-                      color: Color.fromRGBO(172, 208, 193, 0),
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(172, 208, 193, 0),
                       image: DecorationImage(
-                        image: AssetImage('assets/images/banner.jpg'),
+                        image: FileImage(File(event.imagePath)),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Furry Friends Fiesta',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+                Text(
+                  event.eventName,
+                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 5),
-                const Text(
-                  'Event Organizer - Hong Jing Xin',
+                Text(
+                  'Event Organizer - ${organizerName ?? "Loading..."}',
                 ),
                 const SizedBox(height: 15),
                 Row(
@@ -58,7 +180,7 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                   children: [
                     Image.asset('assets/images/calendar.png'),
                     const SizedBox(width: 10),
-                    const Text('17 February 2025')
+                    Text(event.date)
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -68,7 +190,7 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                   children: [
                     Image.asset('assets/images/clock-2.png'),
                     const SizedBox(width: 10),
-                    const Text('10am - 12pm')
+                    Text('${event.startTime} - ${event.endTime}')
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -78,7 +200,7 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                   children: [
                     Image.asset('assets/images/location-2.png'),
                     const SizedBox(width: 10),
-                    const Text('Plaza Arkadia')
+                    Text(event.location)
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -86,9 +208,9 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image.asset('assets/images/fee.png'),
+                    Image.asset('assets/images/group.png'),
                     const SizedBox(width: 10),
-                    const Text('RM5 NETT')
+                    Text('Open for ${event.capacity} participants')
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -97,38 +219,28 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 5),
-                const Text(
-                  'Join us for a paws-itively fun day at the Furry Friends Fiesta! Enjoy exciting games, friendly competitions, and a chance to socialize with other pet lovers. Do not miss out on this tail-wagging event!',
+                Text(
+                  event.description,
                   textAlign: TextAlign.justify,
                 ),
                 const SizedBox(height: 15),
-                const Text(
-                  'Current Participants (3/7)',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                Text(
+                  'Current Participants (${event.participantsCount}/${event.capacity})',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(Icons.pets, color: Colors.green[600]),
-                    Icon(Icons.pets, color: Colors.green[600]),
-                    Icon(Icons.pets, color: Colors.green[600]),
-                    Icon(Icons.pets, color: Colors.grey),
-                    Icon(Icons.pets, color: Colors.grey),
-                    Icon(Icons.pets, color: Colors.grey),
-                    Icon(Icons.pets, color: Colors.grey),
-                  ],
-                ),
+                buildParticipantIcons(),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color.fromRGBO(172, 208, 193, 1)),
-                            onPressed: () {},
-                            child: const Text('Join Now',
-                                style: TextStyle(
+                                backgroundColor: hasJoined ? Colors.grey : const Color.fromRGBO(172, 208, 193, 1)
+                                    ),
+                            onPressed: hasJoined? null : joinEvent,
+                            child: Text(hasJoined ? 'You Have Joined the Event': 'Join Now',
+                                style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16)

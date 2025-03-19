@@ -63,10 +63,10 @@ class UserRepoImpl extends UserRepo {
     }
   }
 
-  // @override
-  // User? getCurrentUser() {
-  //   return firebaseAuth.currentUser;
-  // }
+  @override
+  User? getCurrentUser() {
+    return firebaseAuth.currentUser;
+  }
 
   @override
   Future<user_model.User?> getUserById(String userId) async {
