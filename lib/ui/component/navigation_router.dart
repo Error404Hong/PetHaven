@@ -40,6 +40,7 @@ class NavRouter extends StatelessWidget {
         return HostNewActivity(userData: userData);
       },
     ),
+    GoRoute(path: "/Admin", builder: (context, state) => const Home()),
   ];
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/service/shared_preferences.dart';
 import '../component/custom_auth_painter.dart';
 import '../../data/repository/user/user_repository_impl.dart';
 class Login extends StatefulWidget {
@@ -16,6 +17,7 @@ class _LoginState extends State<Login> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   var _passwordError = "";
+  var _emailError = "";
   bool isLoading = false;
   var showPass = true;
 
@@ -26,7 +28,7 @@ class _LoginState extends State<Login> {
   }
 
   void _navigateToHome(){
-    context.go("/homePage");
+    context.go("/Admin");
   }
 
   Future<void> login(context) async {
@@ -37,8 +39,9 @@ class _LoginState extends State<Login> {
         isLoading = true;
       });
       final bool success = await userRepo.login(email, password);
-      // Navigate to home or dashboard on successful login
+      // Navigate to Admin or dashboard on successful login
       if(success){
+        await SharedPreference.setIsLoggedIn(true);
         _navigateToHome();
       }
     } catch (e) {
@@ -104,7 +107,7 @@ class _LoginState extends State<Login> {
                             controller: _emailController,
                             decoration: InputDecoration(
                               labelText: "Email",
-                              // errorText: _emailError.isEmpty ? null : _emailError,
+                              errorText: _emailError.isEmpty ? null : _emailError,
                               prefixIcon: const Icon(Icons.email),
                               // suffixIcon: isEmailVerified ? const Icon(Icons.verified) : null,
                               border: OutlineInputBorder(
@@ -128,7 +131,7 @@ class _LoginState extends State<Login> {
                               labelText: "Password",
                               prefixIcon: const Icon(Icons.password),
                               suffixIcon: IconButton(
-                                onPressed: () => (),
+                                onPressed: () => _showPass(true),
                                 icon: const Icon(Icons.remove_red_eye),
                               ),
                               errorText:
