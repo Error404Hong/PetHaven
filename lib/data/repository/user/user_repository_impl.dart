@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:intl/intl.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
 import 'package:pet_haven/data/repository/user/user_repository.dart';
 
@@ -63,10 +61,10 @@ class UserRepoImpl extends UserRepo {
     }
   }
 
-  // @override
-  // User? getCurrentUser() {
-  //   return firebaseAuth.currentUser;
-  // }
+  @override
+  User? getCurrentUser() {
+    return firebaseAuth.currentUser;
+  }
 
   @override
   Future<user_model.User?> getUserById(String userId) async {
@@ -82,6 +80,7 @@ class UserRepoImpl extends UserRepo {
       debugPrint("Error getting user by the ID: $e");
       // throw CustomException("Error encountered when getting user");
     }
+    return null;
   }
 
   @override

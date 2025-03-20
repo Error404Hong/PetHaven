@@ -11,7 +11,7 @@ class NavRouter extends StatelessWidget {
   final _routes = [
     GoRoute(path: "/login", builder: (context, state) => const Login()),
     GoRoute(path: "/register", builder: (context,state) => const Register()),
-    GoRoute(path: "/home", builder: (context, state) => const Home()),
+    GoRoute(path: "/Admin", builder: (context, state) => const Home()),
   ];
 
 

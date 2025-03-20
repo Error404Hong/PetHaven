@@ -54,7 +54,7 @@ class _RegisterState extends State<Register> {
   }
 
   void _navigateToHome(){
-    context.go("/home");
+    context.go("/Admin");
   }
 
   Future<void> register(context) async {
