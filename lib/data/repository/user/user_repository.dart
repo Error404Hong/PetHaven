@@ -5,6 +5,6 @@ abstract class UserRepo {
   Future<bool> login(String email, String password);
   Future<void> register(String name, String email, String password,int role);
   User? getCurrentUser();
-  Future<user_model.User?> getUserById(String userId);
+  Future<user_model.User?> getUserById(String? userId);
   Future<void> logout();
 }

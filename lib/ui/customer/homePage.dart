@@ -43,13 +43,7 @@ class _CustHomePageState extends State<CustHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: CustomAppBar(
-        title: "PetHaven",
-        subTitle: "Welcome Back, ${userData?.name ?? "Loading..."}!",
-      ),
-      body: SingleChildScrollView(
+    return SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 18, 15, 10),
           child: Column(
@@ -125,7 +119,7 @@ class _CustHomePageState extends State<CustHomePage> {
             ],
           ),
         ),
-      ),
-    );
+      );
+
   }
 }
