@@ -67,7 +67,7 @@ class UserRepoImpl extends UserRepo {
   }
 
   @override
-  Future<user_model.User?> getUserById(String userId) async {
+  Future<user_model.User?> getUserById(String? userId) async {
     try {
       var querySnapshot = await collection
           .where("id", isEqualTo: userId)
