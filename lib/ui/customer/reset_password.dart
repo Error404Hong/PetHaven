@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import '../../data/model/user.dart';
 import 'alternative_app_bar.dart';
 
 class ResetPassword extends StatefulWidget {
-  const ResetPassword({super.key});
+  final User user;
+  const ResetPassword({super.key, required this.user});
 
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
@@ -14,7 +16,7 @@ class _ResetPasswordState extends State<ResetPassword> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-        appBar: const AlternativeAppBar(pageTitle: "Reset Password"),
+        appBar: AlternativeAppBar(pageTitle: "Reset Password", user: widget.user),
         body: Padding(
           padding: const EdgeInsets.fromLTRB(23.0, 28.0, 15.0, 15.0),
           child: Column(

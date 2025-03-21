@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
             primaryColor: const Color(0xfff7f6ee),
             scaffoldBackgroundColor: const Color(0xfff7f6ee),
         ),
-        home: NavRouter(initialRoute: isLoggedIn ? "/Admin" : "/login")
+        home: NavRouter(initialRoute: isLoggedIn ? "/home" : "/login")
     );
   }
 }

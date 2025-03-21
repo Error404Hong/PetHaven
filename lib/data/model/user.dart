@@ -7,21 +7,27 @@ class User {
   final String email;
   final String password;
   final int role;
+  final String? phoneNumber;
+  final String? gender;
   static const String tableName = "Users";
   User(
       {this.id,
       required this.name,
       required this.email,
       required this.password,
-      required this.role});
+      required this.role,
+      this.gender,
+      this.phoneNumber});
   User copyWith(
-      {String? id, String? name, String? email, String? password, int? role}) {
+      {String? id, String? name, String? email, String? password, int? role, String? phoneNumber, String? gender}) {
     return User(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
       password: password ?? this.password,
       role: role ?? this.role,
+      gender: gender ?? this.gender,
+      phoneNumber: phoneNumber ?? this.phoneNumber
     );
   }
 
@@ -32,7 +38,9 @@ class User {
       "name": name,
       "email": email,
       "password": hashedPassword,
-      "role": role
+      "role": role,
+      "gender": gender,
+      "phoneNumber": phoneNumber
     };
   }
 
@@ -42,6 +50,9 @@ class User {
         name: map["name"],
         email: map["email"],
         password: map["password"],
-        role: map["role"]);
+        role: map["role"],
+        phoneNumber: map["phoneNumber"],
+        gender: map["gender"]
+    );
   }
 }

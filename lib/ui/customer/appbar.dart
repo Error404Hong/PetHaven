@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../data/model/user.dart';
 import 'user_profile.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subTitle;
-  const CustomAppBar({super.key, required this.title, required this.subTitle});
+  final User user;
+  const CustomAppBar({super.key, required this.title, required this.subTitle, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -32,19 +35,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
                 actions: <Widget>[
-                  IconButton(
-                    icon: const Icon(Icons.settings, color: Color.fromRGBO(33, 31, 31, 1)),
-                    onPressed: () {},
-                  ),
                   Padding(
                     padding: const EdgeInsets.only(right: 10.0),
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const UserProfile())
-                        );
-                      },
+                      onTap: () => context.push("/user_profile", extra: user),
                       child: const CircleAvatar(
                         radius: 18,
                         backgroundImage: AssetImage('assets/images/profile-user.png'),

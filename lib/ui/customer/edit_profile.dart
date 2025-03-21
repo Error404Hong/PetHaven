@@ -1,26 +1,125 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pet_haven/ui/component/snackbar.dart';
+import '../../data/model/user.dart';
 import 'alternative_app_bar.dart';
 
 class EditProfile extends StatefulWidget {
-  const EditProfile({super.key});
+  final User user;
+  const EditProfile({super.key, required this.user});
 
   @override
   State<EditProfile> createState() => _EditProfileState();
 }
 
 class _EditProfileState extends State<EditProfile> {
-  TextEditingController nameController =
-      TextEditingController(text: "Hong Jing Xin");
-  TextEditingController emailController =
-      TextEditingController(text: "hongjx0321@gmail.com");
-  TextEditingController phoneController =
-      TextEditingController(text: "0162706160");
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController phoneController;
+  late TextEditingController genderController;
+
+  var _nameError = "";
+  var _emailError = "";
+  var _phoneNumberError = "";
+  var _genderError = "";
+
+  @override
+  void initState() {
+  super.initState();
+  nameController = TextEditingController(text: widget.user.name);
+  emailController = TextEditingController(text: widget.user.email);
+  phoneController = TextEditingController(text: widget.user.phoneNumber);
+  genderController = TextEditingController(text: widget.user.gender);
+  }
+
+  Future<void> saveProfile() async {
+    try {
+      String newName = nameController.text.trim();
+      String newEmail = emailController.text.trim();
+      String newPhoneNum = phoneController.text.trim();
+      String newGender = genderController.text.trim();
+
+      setState(() {
+        _nameError = newName.isEmpty ? "Name cannot be empty" : "";
+        _emailError = newEmail.isEmpty ? "Email cannot be empty" : "";
+        _phoneNumberError = newPhoneNum.isEmpty ? "Phone number cannot be empty" : "";
+        _genderError = newGender.isEmpty ? "Gender cannot be empty" : "";
+      });
+
+      List<String> errors = [];
+      if (_nameError.isNotEmpty) errors.add(_nameError);
+      if (_emailError.isNotEmpty) errors.add(_emailError);
+      if (_phoneNumberError.isNotEmpty) errors.add(_phoneNumberError);
+      if (_genderError.isNotEmpty) errors.add(_genderError);
+
+      if (errors.isNotEmpty) {
+        showErrorDialog(errors);
+        return;
+      }
+
+      var db = FirebaseFirestore.instance;
+      DocumentReference userRef = db.collection("Users").doc(widget.user.id);
+
+      Map<String, dynamic> updatedData = {
+        "name": newName,
+        "email": newEmail,
+        "phoneNumber": newPhoneNum,
+        "gender": newGender
+      };
+
+      await userRef.update(updatedData);
+
+      User updatedUser = User(
+        id: widget.user.id,
+        name: newName,
+        email: newEmail,
+        phoneNumber: newPhoneNum,
+        gender: newGender,
+        password: widget.user.password,
+        role: widget.user.role
+      );
+
+      showSnackbar(context, "Profile Updated Successfully!", Colors.green);
+
+      // context.pop(updatedUser);
+      Navigator.pop(context, updatedUser);
+
+    } catch (e) {
+      print("Error updating profile: $e");
+      showSnackbar(context, "Failed to update profile.", Colors.red);
+    }
+  }
+
+  void showErrorDialog(List<String> errors) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Input Error", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: errors.map((error) => Text("• $error", style: const TextStyle(fontSize: 14))).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK", style: TextStyle(color: Colors.black87)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: const AlternativeAppBar(pageTitle: "Edit Profile"),
+      appBar: AlternativeAppBar(pageTitle: "Edit Profile", user: widget.user),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(28, 48, 28, 10),
         child: Column(
@@ -182,18 +281,22 @@ class _EditProfileState extends State<EditProfile> {
                                 fillColor: Colors.white,
                                 filled: true,
                               ),
-                              value: "Male",
-                              items: ["Male", "Female", "Other"]
-                                  .map((String gender) {
+                              value: widget.user.gender!.isNotEmpty ? widget.user.gender : "Male", // Ensure a default value
+                              items: ["Male", "Female", "Other"].map((String gender) {
                                 return DropdownMenuItem<String>(
                                   value: gender,
                                   child: Text(gender),
                                 );
                               }).toList(),
                               onChanged: (String? newValue) {
-                                // Handle gender selection
+                                if (newValue != null) {
+                                  setState(() {
+                                    genderController.text = newValue; // Update controller when user selects a value
+                                  });
+                                }
                               },
                             ),
+
                           ),
                         ),
                       ],
@@ -205,7 +308,7 @@ class _EditProfileState extends State<EditProfile> {
                   width: double.infinity,
                   height: 40,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => saveProfile(),
                     style: const ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll<Color>(
                           Color.fromRGBO(172, 208, 193, 1)),

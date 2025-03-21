@@ -4,9 +4,12 @@ import 'package:pet_haven/ui/component/bottom_nav.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_haven/ui/Admin/adminHome.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
+import 'package:pet_haven/ui/vendor/vendorHome.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'customer/appbar.dart';
 import 'customer/homePage.dart';
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -15,69 +18,86 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  UserRepoImpl userRepo = UserRepoImpl();
+  User? currentUser;
+  user_model.User? userDetails;
+  bool isLoading = true;
+
+  @override
   void initState() {
     super.initState();
     _loadCurrentUser();
   }
 
-  int _page = 0;
-  UserRepoImpl UserRepo = UserRepoImpl();
-  User? currentUser;
-  user_model.User? userDetails;
-  void _logout() async {
-    UserRepo.logout();
-  }
-
   void _loadCurrentUser() async {
-    User? user = UserRepo.getCurrentUser();
+    User? user = userRepo.getCurrentUser();
     if (user != null) {
       setState(() {
         currentUser = user;
       });
-      _getUserById(); // Fetch user only after currentUser is initialized
+      _listenToUserUpdates();
     }
   }
 
-  void _getUserById() async {
+  void _listenToUserUpdates() {
     if (currentUser != null) {
-      user_model.User? userDetail = await UserRepo.getUserById(currentUser!.uid);
-      setState(() {
-        userDetails = userDetail;
+      FirebaseFirestore.instance
+          .collection(user_model.User.tableName) // "Users"
+          .doc(currentUser!.uid)
+          .snapshots()
+          .listen((snapshot) {
+        if (snapshot.exists && snapshot.data() != null) {
+          setState(() {
+            userDetails = user_model.User.fromMap(snapshot.data()!);
+            isLoading = false;
+          });
+        }
       });
     }
   }
 
+  Widget _getHomePage() {
+    if (userDetails == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    switch (userDetails!.role) {
+      case 3:
+        return const Adminhome();
+      case 2:
+        return const Vendorhome();
+      default:
+        return const CustHomePage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-        appBar: CustomAppBar(
-          title: "PetHaven",
-          subTitle: "Welcome Back, ${userDetails?.name ?? "Loading..."}!",
-        ),
-      bottomNavigationBar: BottomNav(
+      backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
+      appBar: isLoading
+          ? null
+          : CustomAppBar(
+        title: "PetHaven",
+        subTitle: "Welcome Back, ${userDetails?.name ?? "Loading..."}!",
+        user: userDetails!,
+      ),
+      bottomNavigationBar: isLoading
+          ? null
+          : BottomNav(
         onPageChanged: (index) {
-          setState(() {
-            _page = index;
-          });
+          setState(() {});
         },
       ),
-      body: Container(
-        color: Color(0xfff7f6ee),
-          child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              (userDetails?.role == 3) ?
-              Adminhome():
-              CustHomePage(),
-
-            ],
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Container(
+        color: const Color(0xfff7f6ee),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(children: <Widget>[_getHomePage()]),
           ),
-
         ),
-      ),)
+      ),
     );
   }
 }

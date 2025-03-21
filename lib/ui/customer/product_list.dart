@@ -26,8 +26,8 @@ class _ProductListState extends State<ProductList> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: const CustomAppBar(
-          title: "Product List", subTitle: "Looking for Something?"),
+      appBar: CustomAppBar(
+          title: "Product List", subTitle: "Looking for Something?", user: widget.userData),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,7 +110,7 @@ class _ProductListState extends State<ProductList> {
                 ),
                 itemCount: 10,
                 itemBuilder: (context, index) {
-                  return const ProductBox();
+                  return ProductBox(user: widget.userData);
                 },
               ),
             ),

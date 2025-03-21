@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../data/model/user.dart';
 import 'product_details.dart';
 
 class ProductBox extends StatefulWidget {
-  const ProductBox({super.key});
+  final User user;
+  const ProductBox({super.key, required this.user});
 
   @override
   State<ProductBox> createState() => _ProductBoxState();
@@ -68,7 +70,7 @@ class _ProductBoxState extends State<ProductBox> {
       onTap: () {
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ProductDetails())
+            MaterialPageRoute(builder: (context) => ProductDetails(user: widget.user))
         );
       },
     );

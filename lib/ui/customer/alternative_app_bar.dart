@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../data/model/user.dart';
 import 'user_profile.dart';
 
 class AlternativeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String pageTitle;
-  const AlternativeAppBar({super.key, required this.pageTitle});
+  final User user;
+  const AlternativeAppBar({super.key, required this.pageTitle, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class AlternativeAppBar extends StatelessWidget implements PreferredSizeWidget {
               if(pageTitle != 'My Profile' && pageTitle != "Edit Profile" && pageTitle != "Upcoming Schedules" && pageTitle != "Reset Password") {
                 Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const UserProfile())
+                    MaterialPageRoute(builder: (context) => UserProfile(user: user))
                 );
               }
             },

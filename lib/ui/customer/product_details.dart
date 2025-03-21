@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../data/model/user.dart';
 import 'alternative_app_bar.dart';
 import 'customer_review_box.dart';
 
 class ProductDetails extends StatefulWidget {
-  const ProductDetails({super.key});
+  final User user;
+  const ProductDetails({super.key, required this.user});
 
   @override
   State<ProductDetails> createState() => _ProductDetailsState();
@@ -14,7 +16,7 @@ class _ProductDetailsState extends State<ProductDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-        appBar: const AlternativeAppBar(pageTitle: "Product Details"),
+        appBar: AlternativeAppBar(pageTitle: "Product Details", user: widget.user),
         body: SingleChildScrollView(
           child: Column(
             children: [

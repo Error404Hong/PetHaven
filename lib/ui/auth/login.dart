@@ -28,7 +28,7 @@ class _LoginState extends State<Login> {
   }
 
   void _navigateToHome(){
-    context.go("/Admin");
+    context.go("/home");
   }
 
   Future<void> login(context) async {
