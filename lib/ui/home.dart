@@ -7,6 +7,7 @@ import 'package:pet_haven/data/model/user.dart' as user_model;
 import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
 import 'package:pet_haven/ui/vendor/vendorHome.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 
 import 'customer/appbar.dart';
 import 'customer/homePage.dart';
@@ -90,9 +91,9 @@ class _HomeState extends State<Home> {
       appBar: isLoading || userDetails == null
           ? null
           : userDetails!.role == 2
-          ? AlternativeAppBar(
+          ? VendorAppBar(
         pageTitle: "PetHaven",
-        user: userDetails!,
+        vendorData: userDetails!,
       )
           : CustomAppBar(
         title: "PetHaven",

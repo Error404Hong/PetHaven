@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
+import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 import '../../data/model/user.dart';
 
 class AddProduct extends StatefulWidget {
@@ -19,9 +19,9 @@ class _AddProductState extends State<AddProduct> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AlternativeAppBar(
+      appBar: VendorAppBar(
         pageTitle: widget.mode == "add" ? "Upload Product" : "Manage Product",
-        user: widget.vendorData,
+        vendorData: widget.vendorData,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

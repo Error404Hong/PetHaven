@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
 import 'package:pet_haven/ui/vendor/order_container.dart';
+import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 import '../../data/model/user.dart';
 
 class OrderDashboard extends StatefulWidget {
@@ -15,7 +15,7 @@ class _OrderDashboardState extends State<OrderDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AlternativeAppBar(pageTitle: "Order Management", user: widget.vendorData),
+      appBar: VendorAppBar(pageTitle: "Order Management", vendorData: widget.vendorData),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 28, 18, 10),

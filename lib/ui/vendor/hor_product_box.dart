@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pet_haven/ui/vendor/check_feedback.dart';
 import '../../data/model/user.dart';
 import 'add_product.dart';
 
@@ -19,7 +20,12 @@ class _HorProductBoxState extends State<HorProductBox> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AddProduct(vendorData: widget.vendorData, mode: "manage"))
+              MaterialPageRoute(
+                builder: (context) => AddProduct(
+                  vendorData: widget.vendorData,
+                  mode: "manage",
+                ),
+              ),
             );
           },
           child: Container(
@@ -37,30 +43,49 @@ class _HorProductBoxState extends State<HorProductBox> {
                 ),
               ],
             ),
-            child: const Row(
+            child: Row(
               children: [
                 // Product Icon
-                Icon(Icons.shopping_bag, color: Colors.teal, size: 40),
-                SizedBox(width: 12),
+                const Icon(Icons.shopping_bag, color: Colors.teal, size: 40),
+                const SizedBox(width: 12),
 
                 // Product Info (Name & Price)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Product Name",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
+                      const SizedBox(height: 4),
+                      const Text(
                         "\$10.00",
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Check Feedback Link
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CheckFeedback(vendorData: widget.vendorData),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Check Feedback",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue,
+                          ),
                         ),
                       ),
                     ],
@@ -68,7 +93,7 @@ class _HorProductBoxState extends State<HorProductBox> {
                 ),
 
                 // Quantity Section (Number on top, Text below)
-                Column(
+                const Column(
                   children: [
                     Text(
                       "5", // Quantity Number

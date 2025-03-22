@@ -84,33 +84,6 @@ class _QuickActionsState extends State<QuickActions> {
           ),
         ),
         GestureDetector(
-          onTap: () {}, // Add navigation later
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    )
-                  ],
-                ),
-                child: const Icon(Icons.feedback, size: 30, color: Colors.teal),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Check Feedback",
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-        GestureDetector(
           onTap: () {
             Navigator.push(
                 context,
@@ -136,7 +109,34 @@ class _QuickActionsState extends State<QuickActions> {
               ),
               const SizedBox(height: 8),
               const Text(
-                "My Products",
+                "Manage Products",
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: () {},
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    )
+                  ],
+                ),
+                child: const Icon(Icons.person, size: 30, color: Colors.teal),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "My Profile",
                 style: TextStyle(fontSize: 12),
               ),
             ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
+import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 import '../../data/model/user.dart';
 
 class ManageOrders extends StatefulWidget {
@@ -28,17 +28,17 @@ class _ManageOrdersState extends State<ManageOrders> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AlternativeAppBar(
-          pageTitle: "Orders Management", user: widget.vendorData),
+      appBar: VendorAppBar(
+          pageTitle: "Orders Management", vendorData: widget.vendorData),
       body: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(18, 28, 18, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               "Overview",
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
             Container(

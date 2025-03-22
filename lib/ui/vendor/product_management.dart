@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
 import 'package:pet_haven/ui/vendor/hor_product_box.dart';
+import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 import '../../data/model/user.dart';
 import 'add_product.dart';
 
@@ -19,7 +19,7 @@ class _ProductManagementState extends State<ProductManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AlternativeAppBar(pageTitle: "Products Management", user: widget.vendorData),
+      appBar: VendorAppBar(pageTitle: "Products Management", vendorData: widget.vendorData),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
