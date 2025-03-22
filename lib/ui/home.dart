@@ -4,6 +4,7 @@ import 'package:pet_haven/ui/component/bottom_nav.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_haven/ui/Admin/adminHome.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
+import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
 import 'package:pet_haven/ui/vendor/vendorHome.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -32,28 +33,40 @@ class _HomeState extends State<Home> {
   void _loadCurrentUser() async {
     User? user = userRepo.getCurrentUser();
     if (user != null) {
+      debugPrint("Current user found: \${user.uid}");
       setState(() {
         currentUser = user;
       });
-      _listenToUserUpdates();
+      _waitForUserData();
+    } else {
+      debugPrint("No current user found in FirebaseAuth!");
+      setState(() => isLoading = false);
     }
   }
 
-  void _listenToUserUpdates() {
-    if (currentUser != null) {
-      FirebaseFirestore.instance
-          .collection(user_model.User.tableName) // "Users"
+  Future<void> _waitForUserData() async {
+    for (int i = 0; i < 5; i++) {
+      if (currentUser == null) return;
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection(user_model.User.tableName)
           .doc(currentUser!.uid)
-          .snapshots()
-          .listen((snapshot) {
-        if (snapshot.exists && snapshot.data() != null) {
-          setState(() {
-            userDetails = user_model.User.fromMap(snapshot.data()!);
-            isLoading = false;
-          });
-        }
-      });
+          .get();
+
+      if (snapshot.exists && snapshot.data() != null) {
+        debugPrint("Firestore data found after \${i + 1} attempts");
+        setState(() {
+          userDetails = user_model.User.fromMap(snapshot.data() as Map<String, dynamic>);
+          isLoading = false;
+        });
+        return;
+      }
+
+      debugPrint("Retrying Firestore fetch in 1 second...");
+      await Future.delayed(const Duration(seconds: 1));
     }
+
+    debugPrint("Failed to fetch user data after 5 attempts.");
+    setState(() => isLoading = false);
   }
 
   Widget _getHomePage() {
@@ -74,20 +87,19 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: isLoading
+      appBar: isLoading || userDetails == null
           ? null
+          : userDetails!.role == 2
+          ? AlternativeAppBar(
+        pageTitle: "PetHaven",
+        user: userDetails!,
+      )
           : CustomAppBar(
         title: "PetHaven",
         subTitle: "Welcome Back, ${userDetails?.name ?? "Loading..."}!",
         user: userDetails!,
       ),
-      bottomNavigationBar: isLoading
-          ? null
-          : BottomNav(
-        onPageChanged: (index) {
-          setState(() {});
-        },
-      ),
+      bottomNavigationBar: isLoading ? null : BottomNav(onPageChanged: (index) => setState(() {})),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Container(
