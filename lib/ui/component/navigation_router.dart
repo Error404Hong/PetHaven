@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pet_haven/ui/admin/contactCustomerSupport.dart';
+import 'package:pet_haven/ui/auth/forgot_password.dart';
 import '../../data/model/user.dart' as user_model;
 import '../auth/login.dart';
 import '../auth/register.dart';
@@ -17,6 +19,10 @@ class NavRouter extends StatelessWidget {
   final _routes = [
     GoRoute(path: "/login", builder: (context, state) => const Login()),
     GoRoute(path: "/register", builder: (context,state) => const Register()),
+    GoRoute(path: "/forgotPassword", builder: (context,state){
+      final String email = state.extra as String;
+      return ForgotPassword(email: email);
+    },),
     GoRoute(path: "/home", builder: (context, state) => const Home()),
     GoRoute(path: "/homePage", builder: (context, state) => const CustHomePage()),
     GoRoute(
@@ -40,7 +46,12 @@ class NavRouter extends StatelessWidget {
         return HostNewActivity(userData: userData);
       },
     ),
-    GoRoute(path: "/Admin", builder: (context, state) => const Home()),
+    GoRoute(path: "/admin", builder: (context, state) => const Home()),
+    GoRoute(path: "/customer_support", builder: (context, state) {
+      final String chatId = state.extra as String;
+      return ContactCustomerSupport(chatID: chatId);
+    })
+
   ];
 
 

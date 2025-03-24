@@ -28,7 +28,20 @@ class _LoginState extends State<Login> {
   }
 
   void _navigateToHome(){
-    context.go("/Admin");
+    context.go("/admin");
+  }
+  void _navigateToForgotPassword() {
+    String email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _emailError = "Please enter your email.";
+      });
+      return;
+    }
+    setState(() {
+      _emailError = ""; // Clear any previous error
+    });
+    context.go("forgotPassword", extra: email);
   }
 
   Future<void> login(context) async {
@@ -39,7 +52,7 @@ class _LoginState extends State<Login> {
         isLoading = true;
       });
       final bool success = await userRepo.login(email, password);
-      // Navigate to Admin or dashboard on successful login
+      // Navigate to admin or dashboard on successful login
       if(success){
         await SharedPreference.setIsLoggedIn(true);
         _navigateToHome();
@@ -146,7 +159,7 @@ class _LoginState extends State<Login> {
                         const SizedBox(height: 20,),
 
                         GestureDetector(
-                          // onTap: _navigateToForgotPassword,
+                          onTap: _navigateToForgotPassword,
                           child: const Text(
                             "Forgot password?",
                             style: TextStyle(

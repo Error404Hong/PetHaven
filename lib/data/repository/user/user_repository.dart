@@ -7,4 +7,6 @@ abstract class UserRepo {
   User? getCurrentUser();
   Future<user_model.User?> getUserById(String? userId);
   Future<void> logout();
+  Future<List<user_model.User>> getAllUsers();
+  Future<void> deleteUser(String userId);
 }
