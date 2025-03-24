@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pet_haven/data/repository/user/user_repository_impl.dart';
+import 'package:pet_haven/ui/Admin/manageUser.dart';
 import 'package:pet_haven/ui/component/bottom_nav.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_haven/ui/Admin/adminHome.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
+import 'package:pet_haven/ui/customer/user_profile.dart';
 
 import 'customer/appbar.dart';
 import 'customer/homePage.dart';
@@ -20,7 +22,7 @@ class _HomeState extends State<Home> {
     _loadCurrentUser();
   }
   // hello from yan han
-  int _page = 0;
+  int _page = 2;
   UserRepoImpl UserRepo = UserRepoImpl();
   User? currentUser;
   user_model.User? userDetails;
@@ -46,6 +48,13 @@ class _HomeState extends State<Home> {
       });
     }
   }
+  final List<Widget> _pages = [
+    const CustHomePage(),
+    Center(child: Text("Vendor Home Page", style: TextStyle(fontSize: 24))),
+    const Adminhome(), // Middle button (default)
+    const ManageUser(),
+    const UserProfile(),
+  ];
 
 
   @override
@@ -70,7 +79,7 @@ class _HomeState extends State<Home> {
           child: Column(
             children: <Widget>[
               (userDetails?.role == 3) ?
-              Adminhome():
+              _pages[_page]:
               CustHomePage(),
 
             ],

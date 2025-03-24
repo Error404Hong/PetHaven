@@ -7,14 +7,15 @@ import '../../core/custom_exception.dart';
 import '../../data/repository/user/user_repository_impl.dart';
 import '../component/snackbar.dart';
 
-class Register extends StatefulWidget {
-  const Register({super.key});
+class ForgotPassword extends StatefulWidget {
+  final String email;
+  const ForgotPassword({super.key, required this.email});
 
   @override
-  State<Register> createState() => _RegisterState();
+  State<ForgotPassword> createState() => _ForgotPassword();
 }
 
-class _RegisterState extends State<Register> {
+class _ForgotPassword extends State<ForgotPassword> {
   UserRepoImpl userRepo = UserRepoImpl();
   final _firstNameFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
@@ -53,67 +54,6 @@ class _RegisterState extends State<Register> {
     context.go("/login");
   }
 
-  void _navigateToHome(){
-    context.go("/admin");
-  }
-
-  Future<void> register(context) async {
-    try {
-      String firstName = _firstNameController.text.trim();
-      String email = _emailController.text.trim();
-      String password = _passwordController.text.trim();
-      String passwordConfirm = _passwordConfirmController.text.trim();
-
-      setState(() {
-        if (firstName.isEmpty) {
-          _firstNameError = "This field cannot be empty";
-          return;
-        } else {
-          _firstNameError = "";
-        }
-
-        if (!EmailValidator.validate(email)) {
-          _emailError = "Invalid email format";
-          return;
-        } else {
-          _emailError = "";
-        }
-
-        if (password.length < 8) {
-          _passwordError = "Password needs to be at least 8 characters long";
-          return;
-        } else {
-          _passwordError = "";
-        }
-
-        if (passwordConfirm != password) {
-          _passwordConfirmError = "Passwords must match";
-          return;
-        } else {
-          _passwordConfirmError = "";
-        }
-
-        isLoading = true;
-      });
-
-      if (_firstNameError.isEmpty && _emailError.isEmpty && _passwordError.isEmpty &&_passwordConfirmError.isEmpty) {
-        print("not empty");
-        var emailExists = await userRepo.checkEmailInFirebase(email);
-        if (emailExists) {
-          throw CustomException("An account was already registered to this email");
-        }
-        await userRepo.register(firstName, email, password,_selectedRole);
-        showSnackbar(context, "Register successful", Colors.green);
-        _navigateToHome();
-        isLoading = false;
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      showSnackbar(context, e.toString(), Colors.red);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +84,7 @@ class _RegisterState extends State<Register> {
                     margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                     alignment: Alignment.center,
                     child: const Text(
-                      "Welcome to PetHaven",
+                      "Forgot Password",
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.ltr,
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28.0),
@@ -201,38 +141,12 @@ class _RegisterState extends State<Register> {
                         Material(
                           elevation: 10,
                           borderRadius: BorderRadius.circular(10),
-                          child: DropdownButtonFormField<int>(
-                            value: _selectedRole,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(width: 5.0),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                            ),
-                            items: const [
-                              DropdownMenuItem(value: 1, child: Text("Customer")),
-                              DropdownMenuItem(value: 2, child: Text("Vendor")),
-                            ],
-                            onChanged: (int? newValue) {
-                              setState(() {
-                                _selectedRole = newValue!;
-                              });
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(height: 20,),
-
-                        Material(
-                          elevation: 10,
-                          borderRadius: BorderRadius.circular(10),
                           child: TextField(
                             focusNode: _passwordFocusNode,
                             obscureText: showPass,
                             controller: _passwordController,
                             decoration: InputDecoration(
-                              labelText: "Password",
+                              labelText: "New Password",
                               prefixIcon: const Icon(Icons.password),
                               suffixIcon: IconButton(
                                 onPressed: () => _showPass(showPass),
@@ -256,7 +170,7 @@ class _RegisterState extends State<Register> {
                             obscureText: showConPass,
                             controller: _passwordConfirmController,
                             decoration: InputDecoration(
-                              hintText: "Confirm Password",
+                              hintText: "Confirm New Password",
                               suffixIcon: IconButton(
                                 onPressed: () => _showConPass(showConPass),
                                 icon:const Icon(Icons.remove_red_eye),
@@ -274,7 +188,7 @@ class _RegisterState extends State<Register> {
                         GestureDetector(
                           // onTap: _navigateToForgotPassword,
                           child: const Text(
-                            "Forgot password?",
+                            "Back to Login",
                             style: TextStyle(
                               // color: Color(0XFF8BC4A8),
                                 fontWeight: FontWeight.bold
@@ -287,7 +201,7 @@ class _RegisterState extends State<Register> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => register(context),
+                            onPressed: (){},
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0XFF211f1f),
                                 shape: RoundedRectangleBorder(
@@ -299,7 +213,7 @@ class _RegisterState extends State<Register> {
                             //     strokeWidth: 3, color: Colors.white)
                             //     :
                             const Text(
-                              "Register",
+                              "Confirm New Password",
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
                             ),
@@ -307,22 +221,6 @@ class _RegisterState extends State<Register> {
                         ),
                         const SizedBox(
                           height: 20,
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToLogin(),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Don't have an account? "),
-                              Text(
-                                "Sign in",
-                                style: TextStyle(
-                                  // color: Color(0XFF8BC4A8),
-                                    fontWeight: FontWeight.bold
-                                ),
-                              )
-                            ],
-                          ),
                         ),
                       ],
                     ),
