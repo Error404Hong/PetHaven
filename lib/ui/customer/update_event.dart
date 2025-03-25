@@ -1,5 +1,11 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pet_haven/data/repository/customers/event_implementation.dart';
+import 'package:pet_haven/ui/customer/utils/image_utils.dart';
 import '../../data/model/event.dart';
 import '../../data/model/user.dart';
 import '../component/snackbar.dart';
@@ -25,6 +31,9 @@ class _UpdateEventState extends State<UpdateEvent> {
   late TextEditingController _startTimeController;
   late TextEditingController _endTimeController;
 
+  String imagePath = "";
+  Uint8List? _image;
+
   TimeOfDay _selectedStartTime = TimeOfDay.now();
   TimeOfDay _selectedEndTime = TimeOfDay.now();
 
@@ -46,6 +55,77 @@ class _UpdateEventState extends State<UpdateEvent> {
     _dateController = TextEditingController(text: widget.event.date);
     _startTimeController = TextEditingController(text: widget.event.startTime);
     _endTimeController = TextEditingController(text: widget.event.endTime);
+    _loadImage(widget.event.imagePath);
+  }
+
+  Future<void> _loadImage(String imagePath) async {
+    try {
+      final File file = File(imagePath);
+      if (await file.exists()) {
+        Uint8List imageBytes = await file.readAsBytes(); // Read file bytes
+
+        setState(() {
+          _image = imageBytes;
+        });
+
+        print("Image successfully loaded from file.");
+      } else {
+        print("File does not exist: $imagePath");
+      }
+    } catch (e) {
+      print("Error loading image: $e");
+    }
+  }
+
+  void selectImage() async {
+    try {
+      Uint8List? img = await pickImage(ImageSource.gallery);
+      if(img != null) {
+        setState(() {
+          _image = img;
+        });
+      } else {
+        print("No image selected");
+        return;
+      }
+    } catch(e) {
+      print('Error selecting image: $e');
+      return;
+    }
+
+    try {
+      final Directory? externalDir = await getExternalStorageDirectory();
+
+      if (externalDir == null) {
+        print("Error: External storage directory not found.");
+        return;
+      }
+
+      final Directory saveDir = Directory('${externalDir.path}/productPics');
+
+      if (!await saveDir.exists()) {
+        print("Directory does not exist. Creating now...");
+        await saveDir.create(recursive: true);
+      } else {
+        print("Directory already exists.");
+      }
+
+      final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final String savePath = '${saveDir.path}/$fileName';
+      imagePath = savePath;
+      final File localImage = File(savePath);
+
+      print("Final save path: $savePath");
+
+      await localImage.writeAsBytes(_image!).then((_) {
+        print("Image successfully saved at: $savePath");
+      }).catchError((error) {
+        print("Error writing image: $error");
+      });
+
+    } catch(e) {
+      print('Error saving image: $e');
+    }
   }
 
   Future<void> _selectDate() async {
@@ -100,6 +180,7 @@ class _UpdateEventState extends State<UpdateEvent> {
       String startTime = _startTimeController.text.trim();
       String endTime = _endTimeController.text.trim();
       String date = _dateController.text.trim();
+      String imageFilePath = imagePath;
 
       // Validate inputs
       setState(() {
@@ -128,6 +209,7 @@ class _UpdateEventState extends State<UpdateEvent> {
         event.startTime = startTime;
         event.endTime = endTime;
         event.date = date;
+        event.imagePath = imageFilePath;
 
         // Call eventImpl.updateEvent(event)
         await eventImpl.updateEvent(event);
@@ -148,25 +230,60 @@ class _UpdateEventState extends State<UpdateEvent> {
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
       appBar: AlternativeAppBar(pageTitle: "Event Update", user: widget.user),body: SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+        padding: const EdgeInsets.fromLTRB(18, 28, 18, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Image.asset(
-                'assets/images/pen.png',
-                height: 100,
-                fit: BoxFit.contain,
+              const Text(
+                "Update Event Cover Image",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
               ),
+            const SizedBox(height: 18),
+            Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20.0),
+                    image: DecorationImage(
+                      image: _image != null
+                          ? MemoryImage(_image!)
+                          : const NetworkImage(
+                        "https://images.unsplash.com/photo-1738626068354-bfede24d8c9c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fGJhbm5lciUyMG1vdW50YWlufGVufDB8fDB8fHww",
+                      ) as ImageProvider<Object>,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.6), // Background contrast
+                    ),
+                    padding: const EdgeInsets.all(8), // Padding for better touch area
+                    child: IconButton(
+                      onPressed: () => selectImage(),
+                      icon: const Icon(
+                        Icons.add_a_photo_rounded,
+                        size: 30, // Bigger icon
+                        color: Colors.white, // White for better visibility
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            const Center(
-              child: Text(
-                "Editing Event Details",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+            const SizedBox(height: 28),
+            const Text(
+              "Manage Event Details",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 18),
             TextField(
               controller: _eventNameController,
               decoration: InputDecoration(

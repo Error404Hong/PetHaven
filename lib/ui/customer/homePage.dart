@@ -177,7 +177,7 @@ class _CustHomePageState extends State<CustHomePage> {
                     MaterialPageRoute(builder: (context) => CheckOrderStatus(user: userData!))
                   );
                 },
-                  child: Text("Check my purchase")
+                  child: const Text("Check my purchase")
                 )
               ],
             ),

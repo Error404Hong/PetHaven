@@ -27,6 +27,14 @@ class _PurchaseProductState extends State<PurchaseProduct> {
   final TextEditingController _expiryController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _recipientAddressController = TextEditingController();
+  final TextEditingController _recipientNameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _recipientNameController.text = widget.user.name; // Set recipient name to user’s name
+  }
 
   Future<void> _processPayment() async {
     try {
@@ -35,8 +43,9 @@ class _PurchaseProductState extends State<PurchaseProduct> {
       String? vendorID = widget.productData.vendorID;
       double amount = widget.productData.price;
       String deliveryStatus = "Pending Delivery";
+      String address = _recipientAddressController.text.trim();
       if (_formKey.currentState!.validate()) {
-        Payment newPayment = Payment(amount: amount, userID: userID!, productID: productID!, vendorID: vendorID, deliveryStatus: deliveryStatus);
+        Payment newPayment = Payment(amount: amount, userID: userID!, productID: productID!, vendorID: vendorID, deliveryStatus: deliveryStatus, address: address);
         paymentImpl.newPayment(newPayment);
         productImpl.updateStatusAfterSales(widget.productData);
 
@@ -237,6 +246,46 @@ class _PurchaseProductState extends State<PurchaseProduct> {
                     ),
 
                     const SizedBox(height: 30),
+
+                    // Recipient Name (Disabled)
+                    TextFormField(
+                      controller: _recipientNameController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: "Recipient Name",
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true, // Make background grey
+                        fillColor: Colors.grey[200],
+                      ),
+                      readOnly: true, // ❌ Prevent changes
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Recipient Address (Editable)
+                    TextFormField(
+                      controller: _recipientAddressController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: "Recipient Address",
+                        prefixIcon: const Icon(Icons.location_on),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Enter recipient address";
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 30),
+
 
                     // Pay Button
                     SizedBox(

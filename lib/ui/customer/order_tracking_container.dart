@@ -172,6 +172,24 @@ class _OrderTrackingContainerState extends State<OrderTrackingContainer> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.location_on, color: Colors.green, size: 18),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          "Recipient Address: ${widget.paymentData.address}",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
@@ -200,7 +218,5 @@ class _OrderTrackingContainerState extends State<OrderTrackingContainer> {
         const SizedBox(height: 25),
       ],
     );
-
-
   }
 }

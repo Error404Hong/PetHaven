@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_haven/data/repository/customers/event_implementation.dart';
 import '../../data/model/user.dart';
 import '../component/snackbar.dart';
 import 'alternative_app_bar.dart';
@@ -16,6 +17,7 @@ class ActivityDetails extends StatefulWidget {
 }
 
 class _ActivityDetailsState extends State<ActivityDetails> {
+  EventImplementation eventImpl = EventImplementation();
   late Event event;
   String? organizerName;
   bool hasJoined = false;
@@ -129,6 +131,24 @@ class _ActivityDetailsState extends State<ActivityDetails> {
     }
   }
 
+  void quitEvent() async {
+    if (!hasJoined || widget.event.organizerID == widget.user.id) return;
+
+    try {
+      await eventImpl.quitEvent(widget.event.id!, widget.user.id!);
+
+      setState(() {
+        event.participantsCount = (int.parse(event.participantsCount) - 1).toString();
+        hasJoined = false;
+      });
+
+      showSnackbar(context, "You have left the event.", Colors.red);
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+
 
 
   @override
@@ -234,21 +254,36 @@ class _ActivityDetailsState extends State<ActivityDetails> {
                 Row(
                   children: [
                     Expanded(
-                        child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: hasJoined ? Colors.grey : const Color.fromRGBO(172, 208, 193, 1)
-                                    ),
-                            onPressed: hasJoined? null : joinEvent,
-                            child: Text(hasJoined ? 'You Have Joined the Event': 'Join Now',
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16)
-                            )
-                        )
-                    )
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: hasJoined
+                              ? (widget.event.organizerID == widget.user.id
+                              ? Colors.grey // Disabled state color for organizer
+                              : Colors.redAccent)
+                              : const Color.fromRGBO(172, 208, 193, 1),
+                        ),
+                        onPressed: (widget.event.organizerID == widget.user.id)
+                            ? null // Disable button if user is the organizer
+                            : (hasJoined ? quitEvent : joinEvent),
+                        child: Text(
+                          hasJoined
+                              ? (widget.event.organizerID == widget.user.id
+                              ? 'Organizer Cannot Quit'
+                              : 'Quit Activity')
+                              : 'Join Now',
+                          style: TextStyle(
+                            color: hasJoined && widget.event.organizerID != widget.user.id
+                                ? Colors.white // White text for redAccent button
+                                : Colors.black,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+
                 const SizedBox(height: 30),
               ],
             ),

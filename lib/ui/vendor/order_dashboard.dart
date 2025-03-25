@@ -53,6 +53,7 @@ class _OrderDashboardState extends State<OrderDashboard> {
         vendorID: doc['vendorID'],
         productID: doc['productID'],
         deliveryStatus: doc['deliveryStatus'],
+        address: doc['address']
       )).toList();
 
       setState(() {
