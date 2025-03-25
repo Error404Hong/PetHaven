@@ -206,7 +206,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                       ),
                       child: const Text(
                         'Buy Now',
-                        style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w800),
+                        style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w800),
                       ),
                     ),
                   ),

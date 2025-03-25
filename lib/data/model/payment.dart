@@ -9,6 +9,7 @@ class Payment {
   String userID;
   String productID;
   String vendorID;
+  String address;
 
   Payment({
     this.paymentID,
@@ -16,7 +17,8 @@ class Payment {
     required this.userID,
     required this.productID,
     required this.vendorID,
-    required this.deliveryStatus
+    required this.deliveryStatus,
+    required this.address
   })  : paymentDate = DateTime.now(),
         paymentMethod = "Card Payment";
 
@@ -30,7 +32,8 @@ class Payment {
       'deliveryStatus': deliveryStatus,
       'userID': userID,
       'productID': productID,
-      'vendorID': vendorID
+      'vendorID': vendorID,
+      'address': address
     };
   }
 
@@ -42,6 +45,7 @@ class Payment {
       userID: map['userID'],
       productID: map['productID'],
       vendorID: map['vendorID'],
+      address: map['address'],
       deliveryStatus: map['deliveryStatus']
     )..paymentDate = DateTime.parse(map['paymentDate'])
       ..paymentMethod = map['paymentMethod'];
@@ -56,6 +60,7 @@ class Payment {
       userID: data['userID'],
       productID: data['productID'],
       vendorID: data['vendorID'],
+      address: data['address'],
       deliveryStatus: data['deliveryStatus'],
     )..paymentDate = (data['paymentDate'] as Timestamp).toDate()
       ..paymentMethod = data['paymentMethod'] ?? "Card Payment";

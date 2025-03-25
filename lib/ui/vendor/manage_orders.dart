@@ -190,6 +190,17 @@ class _ManageOrdersState extends State<ManageOrders> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
+                    "Delivery Address",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.orderData.address,
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
                     "Payment Method:",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),

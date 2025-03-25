@@ -43,7 +43,6 @@ class _CheckOrderState extends State<CheckOrderStatus> {
                     return const Center(child: Text("No orders found"));
                   }
 
-                  // ✅ Categorize orders by delivery status
                   var orders = snapshot.data!;
                   var pendingDelivery = orders.where((o) => o.deliveryStatus == "Pending Delivery").toList();
                   var outForDelivery = orders.where((o) => o.deliveryStatus == "Out for Delivery").toList();
@@ -68,7 +67,6 @@ class _CheckOrderState extends State<CheckOrderStatus> {
     );
   }
 
-  /// ✅ Helper function to build a category section with formatted text
   Widget buildCategorySection(String title, List<Payment> orders, Color color, String emoji) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

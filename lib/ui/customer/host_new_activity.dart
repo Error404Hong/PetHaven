@@ -227,13 +227,24 @@ class _HostNewActivityState extends State<HostNewActivity> {
                     ),
                   ),
                   Positioned(
-                    bottom: 65,
-                    left: 162,
-                    child: IconButton(
-                      onPressed: () => selectImage(),
-                      icon: const Icon(Icons.add_a_photo_rounded, size: 33),
+                    bottom: 10,
+                    right: 10,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.6), // Background contrast
+                      ),
+                      padding: const EdgeInsets.all(8), // Padding for better touch area
+                      child: IconButton(
+                        onPressed: () => selectImage(),
+                        icon: const Icon(
+                          Icons.add_a_photo_rounded,
+                          size: 30, // Bigger icon
+                          color: Colors.white, // White for better visibility
+                        ),
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 15),

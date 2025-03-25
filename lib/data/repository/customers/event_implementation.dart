@@ -27,6 +27,36 @@ class EventImplementation {
     }
   }
 
+  Future<void> quitEvent(String eventID, String participantID) async {
+    try {
+      DocumentReference eventRef = db.collection(collectionName).doc(eventID);
+      await db.runTransaction((transaction) async {
+        DocumentSnapshot snapshot = await transaction.get(eventRef);
+
+        if (!snapshot.exists) {
+          throw Exception("Event does not exist!");
+        }
+
+        List<dynamic> currentParticipants = snapshot["participants"] ?? [];
+        int currentCount = int.parse(snapshot["participantsCount"]);
+
+        if (!currentParticipants.contains(participantID)) {
+          throw Exception("User is not in the event!");
+        }
+
+        transaction.update(eventRef, {
+          "participants": FieldValue.arrayRemove([participantID]),
+          "participantsCount": (currentCount - 1).toString(),
+        });
+
+        print("Participant $participantID removed from event $eventID");
+      });
+    } catch (e) {
+      print("Error removing participant: $e");
+    }
+  }
+
+
   Future<void> updateEvent(Event event) async {
     try {
       DocumentReference eventRef = db.collection(collectionName).doc(event.id);
@@ -39,6 +69,7 @@ class EventImplementation {
         'description': event.description,
         'location': event.location,
         'capacity': event.capacity,
+        'imagePath': event.imagePath
       });
 
       print("Event updated successfully");
