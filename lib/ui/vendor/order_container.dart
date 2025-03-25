@@ -1,16 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:pet_haven/data/repository/user/payment_implementation.dart';
 import 'package:pet_haven/ui/vendor/manage_orders.dart';
+import '../../data/model/payment.dart';
 import '../../data/model/user.dart';
 
 class OrderContainer extends StatefulWidget {
   final User vendorData;
-  const OrderContainer({super.key, required this.vendorData});
+  final Payment orderData;
+  const OrderContainer({super.key, required this.vendorData, required this.orderData});
 
   @override
   State<OrderContainer> createState() => _OrderContainerState();
 }
 
 class _OrderContainerState extends State<OrderContainer> {
+  PaymentImplementation paymentImpl = PaymentImplementation();
+
+  String customerName = "";
+  String customerEmail = "";
+  String productName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCustomerDetails(widget.orderData.userID);
+    fetchProductDetails(widget.orderData.productID);
+  }
+
+  Future<void> fetchCustomerDetails(String customerID) async {
+    try {
+      // Fetch customer details asynchronously
+      var customerData = await paymentImpl.getCustomerDetails(customerID);
+      if (customerData != null) {
+        setState(() {
+          // Update the state with both name and email
+          customerName = customerData['name'] ?? 'Not Available';
+          customerEmail = customerData['email'] ?? 'Not Available';
+        });
+      } else {
+        setState(() {
+          customerName = 'Not Available';
+          customerEmail = 'Not Available';
+        });
+      }
+    } catch (e) {
+      print("Error fetching customer details: $e");
+      setState(() {
+        customerName = 'Not Available';
+        customerEmail = 'Not Available';
+      });
+    }
+  }
+
+  Future<void> fetchProductDetails(String productID) async {
+    try {
+      // Fetch product details using the getProductDetails method
+      Map<String, String> productDetails = await paymentImpl.getProductDetails(productID);
+
+      // Update the state with the fetched product name
+      setState(() {
+        productName = productDetails['product name'] ?? 'Not Available';
+      });
+    } catch (e) {
+      print("Error fetching product details: $e");
+      setState(() {
+        productName = 'Not Available';
+      });
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -19,14 +77,14 @@ class _OrderContainerState extends State<OrderContainer> {
           onTap: () {
             Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ManageOrders(vendorData: widget.vendorData))
+                MaterialPageRoute(builder: (context) => ManageOrders(vendorData: widget.vendorData, orderData: widget.orderData))
             );
           },
           child: Container(
             width: 400,
             height: 140,
             decoration: BoxDecoration(
-                color: Color.fromRGBO(240, 220, 116, 1),
+                color: const Color.fromRGBO(240, 220, 116, 1),
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
@@ -49,66 +107,67 @@ class _OrderContainerState extends State<OrderContainer> {
                       Image.asset("assets/images/package.png"),
                     ],
                   ),
-                  const SizedBox(width: 10), // Add spacing before divider
+                  const SizedBox(width: 1), // Add spacing before divider
                   const VerticalDivider(
                     thickness: 2,
                     color: Colors.black45,
                   ),
-                  const SizedBox(width: 10), // Add spacing after divider
-                  const Column(
+                  const SizedBox(width: 1), // Add spacing after divider
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.receipt_long, color: Colors.brown, size: 20),
+                          const Icon(Icons.receipt_long, size: 20),
                           SizedBox(width: 6),
                           Text(
-                            "Order ID: 12345obj",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.brown),
+                            "ID: ${widget.orderData.paymentID}",
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.shopping_bag, size: 20),
-                          SizedBox(width: 6),
+                          const Icon(Icons.shopping_bag, size: 20),
+                          const SizedBox(width: 6),
                           Text(
-                            "Product: Dog Kibbles",
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
+                            "Product: $productName",
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.person, size: 20),
-                          SizedBox(width: 6),
+                          const Icon(Icons.person, size: 20),
+                          const SizedBox(width: 6),
                           Text(
-                            "Customer: Hong Jing Xin",
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
+                            "Customer: $customerName",
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.local_shipping, size: 20),
-                          SizedBox(width: 6),
-                          Text(
+                          const Icon(Icons.local_shipping, size: 20),
+                          const SizedBox(width: 6),
+                          const Text(
                             "Delivery Status: ",
                             style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
+                                fontSize: 14, fontWeight: FontWeight.w500),
                           ),
                           Text(
-                            "Delivered",
-                            style: TextStyle(
-                                fontSize: 15,
+                            widget.orderData.deliveryStatus,
+                            style: const TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.redAccent),
                           ),

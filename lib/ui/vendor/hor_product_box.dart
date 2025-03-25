@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pet_haven/ui/vendor/check_feedback.dart';
+import '../../data/model/product.dart';
 import '../../data/model/user.dart';
 import 'add_product.dart';
 
 class HorProductBox extends StatefulWidget {
+  final Product product;
   final User vendorData;
-  const HorProductBox({super.key, required this.vendorData});
+  const HorProductBox({super.key, required this.vendorData, required this.product});
 
   @override
   State<HorProductBox> createState() => _HorProductBoxState();
@@ -24,6 +26,7 @@ class _HorProductBoxState extends State<HorProductBox> {
                 builder: (context) => AddProduct(
                   vendorData: widget.vendorData,
                   mode: "manage",
+                  product: widget.product
                 ),
               ),
             );
@@ -54,17 +57,17 @@ class _HorProductBoxState extends State<HorProductBox> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Product Name",
-                        style: TextStyle(
+                      Text(
+                        widget.product.productName,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "\$10.00",
-                        style: TextStyle(
+                      Text(
+                        "RM ${widget.product.price}",
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
                         ),
@@ -93,18 +96,18 @@ class _HorProductBoxState extends State<HorProductBox> {
                 ),
 
                 // Quantity Section (Number on top, Text below)
-                const Column(
+                Column(
                   children: [
                     Text(
-                      "5", // Quantity Number
-                      style: TextStyle(
+                      widget.product.inventoryQuantity.toString(),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4), // Spacing
-                    Text(
-                      "Quantity", // Quantity Label
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Quantity",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey,

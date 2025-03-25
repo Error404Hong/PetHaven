@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pet_haven/ui/vendor/add_product.dart';
 import 'package:pet_haven/ui/vendor/order_dashboard.dart';
 import 'package:pet_haven/ui/vendor/product_management.dart';
+import 'package:pet_haven/ui/vendor/vendor_profile.dart';
 import '../../data/model/user.dart';
 
 class QuickActions extends StatefulWidget {
@@ -116,7 +117,12 @@ class _QuickActionsState extends State<QuickActions> {
           ),
         ),
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => VendorProfile(vendorData: widget.vendorData))
+            );
+          },
           child: Column(
             children: [
               Container(

@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pet_haven/ui/customer/check_order_status.dart';
 import '../../data/model/event.dart';
+import '../../data/model/product.dart';
 import '../../data/repository/customers/event_implementation.dart';
 import '../../data/repository/user/user_repository_impl.dart';
+import '../../data/repository/vendors/product_implementation.dart';
 import 'product-box.dart';
 import 'appbar.dart';
 import 'activity_box.dart';
@@ -25,8 +28,10 @@ class CustHomePage extends StatefulWidget {
 class _CustHomePageState extends State<CustHomePage> {
   EventImplementation eventImpl = EventImplementation();
   UserRepoImpl userRepo = UserRepoImpl();
+  ProductImplementation productImpl = ProductImplementation();
+
+  bool isUserLoading = true;
   user_model.User? userData;
-  bool isLoading = true;
 
   @override
   void initState() {
@@ -42,128 +47,146 @@ class _CustHomePageState extends State<CustHomePage> {
         if (mounted) {
           setState(() {
             userData = fetchedUser;
-            isLoading = false;
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
+            isUserLoading = false; // Mark user data as loaded
           });
         }
       }
     } catch (e) {
+      print("Error fetching user: $e");
       if (mounted) {
         setState(() {
-          isLoading = false;
+          isUserLoading = false; // Stop loading even if an error occurs
         });
       }
-      print("Error fetching user: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator()); // Show loading indicator
-    }
-
-    if (userData == null) {
-      return const Center(
-        child: Text("Error: Unable to fetch user data", style: TextStyle(color: Colors.red)),
+    if (isUserLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Show loading screen
       );
     }
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 18, 15, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    if (userData == null) {
+      return const Scaffold(
+        body: Center(child: Text("Error fetching user data.")), // Error fallback
+      );
+    }
+
+    return StreamBuilder<List<Product>>(
+      stream: productImpl.getAllProducts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text("No products available"));
+        }
+
+        List<Product> productList = snapshot.data!;
+
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 15, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Trending Categories 🔥',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
-                ),
-                TextButton(
-                  onPressed: () {
-                    context.push("/product_list", extra: userData);
-                  },
-                  child: const Text(
-                    'Check All',
-                    style: TextStyle(
-                      color: Color.fromRGBO(0, 139, 139, 1),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Trending Categories 🔥',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-
-            // Only render ProductBox if userData is available
-            if (userData != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ProductBox(user: userData!),
-                  ProductBox(user: userData!),
-                ],
-              ),
-
-            const SizedBox(height: 25),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Nearby Adventures 🏞️',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
-                ),
-                TextButton(
-                  onPressed: () {
-                    context.push("/view_activities", extra: userData);
-                  },
-                  child: const Text(
-                    'Check All',
-                    style: TextStyle(
-                      color: Color.fromRGBO(0, 139, 139, 1),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                    TextButton(
+                      onPressed: () {
+                        context.push("/product_list", extra: userData);
+                      },
+                      child: const Text(
+                        'Check All',
+                        style: TextStyle(
+                          color: Color.fromRGBO(0, 139, 139, 1),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            StreamBuilder<List<DocumentSnapshot>>(
-              stream: eventImpl.getRandomEvents(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text("Error: ${snapshot.error}"));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text("No events found"));
-                }
+                const SizedBox(height: 15),
 
-                List<DocumentSnapshot> events = snapshot.data!;
-
-                return Column(
-                  children: events.map((eventDoc) {
-                    Event event = Event.fromMap(eventDoc.data() as Map<String, dynamic>);
-                    return ActivityBox(user: userData!, event: event);
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: productList.take(2).map((product) {
+                    return ProductBox(user: userData!, productData: product);
                   }).toList(),
-                );
-              },
+                ),
+
+                const SizedBox(height: 25),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Nearby Adventures 🏞️',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        context.push("/view_activities", extra: userData);
+                      },
+                      child: const Text(
+                        'Check All',
+                        style: TextStyle(
+                          color: Color.fromRGBO(0, 139, 139, 1),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                StreamBuilder<List<DocumentSnapshot>>(
+                  stream: eventImpl.getRandomEvents(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text("Error: ${snapshot.error}"));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text("No events found"));
+                    }
+
+                    List<DocumentSnapshot> events = snapshot.data!;
+
+                    return Column(
+                      children: events.map((eventDoc) {
+                        Event event = Event.fromMap(eventDoc.data() as Map<String, dynamic>);
+                        return ActivityBox(user: userData!, event: event);
+                      }).toList(),
+                    );
+                  },
+                ),
+                TextButton(onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CheckOrderStatus(user: userData!))
+                  );
+                },
+                  child: Text("Check my purchase")
+                )
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
+
+
 

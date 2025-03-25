@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pet_haven/data/repository/user/user_repository_impl.dart';
+import 'package:pet_haven/ui/vendor/edit_vendor_profile.dart';
 import 'package:pet_haven/ui/vendor/product_management.dart';
 import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 import '../../core/service/shared_preferences.dart';
@@ -17,6 +18,23 @@ class VendorProfile extends StatefulWidget {
 
 class _VendorProfileState extends State<VendorProfile> {
   UserRepoImpl UserRepo = UserRepoImpl();
+  late User _vendorInfo;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserID();
+  }
+
+  void getUserID() async {
+    User? userDetails= await UserRepo.getUserById(widget.vendorData.id);
+    setState(() {
+      _vendorInfo = userDetails!;
+      _isLoading = false;
+    });
+  }
+
   void _logout() async {
     await SharedPreference.setIsLoggedIn(false);
     UserRepo.logout();
@@ -27,8 +45,9 @@ class _VendorProfileState extends State<VendorProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: VendorAppBar(pageTitle: "Vendor Profile", vendorData: widget.vendorData),
-      body: Padding(
-        padding:  const EdgeInsets.fromLTRB(28, 48, 28, 10),
+      body: _isLoading ? const Center(child: CircularProgressIndicator())
+        : Padding(
+        padding: const EdgeInsets.fromLTRB(28, 48, 28, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -44,7 +63,7 @@ class _VendorProfileState extends State<VendorProfile> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    widget.vendorData.name,
+                    _vendorInfo.name,
                     style: const TextStyle(
                       fontSize: 33,
                       fontWeight: FontWeight.w800,
@@ -52,12 +71,26 @@ class _VendorProfileState extends State<VendorProfile> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.vendorData.email,
+                      _vendorInfo.email,
                     style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final updatedUser = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditVendorProfile(vendorData: _vendorInfo),
+                        ),
+                      );
+
+                      // Check if data was returned and update the UI
+                      if (updatedUser != null && updatedUser is User) {
+                        setState(() {
+                          _vendorInfo = updatedUser;
+                        });
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFACD0C1),
                       shape: RoundedRectangleBorder(

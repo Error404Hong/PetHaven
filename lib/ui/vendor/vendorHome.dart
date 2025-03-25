@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
+import 'package:pet_haven/data/repository/user/payment_implementation.dart';
+import 'package:pet_haven/data/repository/vendors/product_implementation.dart';
 import 'package:pet_haven/ui/vendor/order_container.dart';
 import 'package:pet_haven/ui/vendor/quick_actions.dart';
+import '../../data/model/payment.dart';
 import '../../data/repository/user/user_repository_impl.dart';
 import 'order_dashboard.dart';
 
@@ -15,47 +19,79 @@ class Vendorhome extends StatefulWidget {
 class _VendorhomeState extends State<Vendorhome> {
   user_model.User? vendorData;
   UserRepoImpl userRepo = UserRepoImpl();
+  PaymentImplementation paymentImpl = PaymentImplementation();
+  ProductImplementation productImpl = ProductImplementation();
   bool isLoading = true;
+  double totalSales = 0.0;
+  int totalQuantity = 0;
 
   @override
   void initState() {
     super.initState();
-    fetchUser();
+    listenToUserChanges();
   }
 
-  Future<void> fetchUser() async {
-    try {
-      var firebaseUser = userRepo.getCurrentUser();
-      if (firebaseUser != null) {
-        user_model.User? fetchedUser = await userRepo.getUserById(firebaseUser.uid);
-        if (mounted) {
+  void listenToUserChanges() {
+    var firebaseUser = userRepo.getCurrentUser();
+    if (firebaseUser != null) {
+      FirebaseFirestore.instance
+          .collection("Users")
+          .doc(firebaseUser.uid)
+          .snapshots()
+          .listen((documentSnapshot) {
+        if (documentSnapshot.exists) {
           setState(() {
-            vendorData = fetchedUser;
+            vendorData = user_model.User(
+              id: documentSnapshot.id,
+              name: documentSnapshot["name"],
+              email: documentSnapshot["email"],
+              phoneNumber: documentSnapshot["phoneNumber"],
+              gender: documentSnapshot["gender"],
+              password: documentSnapshot["password"],
+              role: documentSnapshot["role"],
+            );
             isLoading = false;
           });
+
+          // Calculate total sales once vendor data is loaded
+          if (vendorData?.id != null) {
+            calculateTotalSales(vendorData!.id!);
+            calculateQuantitySold(vendorData!.id!);
+          }
         }
-      } else {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-      }
-    } catch (e) {
-      if (mounted) {
+      }, onError: (error) {
+        print("Error listening to user changes: $error");
         setState(() {
           isLoading = false;
         });
-      }
-      print("Error fetching user: $e");
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
+  }
+
+  Future<void> calculateTotalSales(String vendorID) async {
+    double sales = await productImpl.calculateVendorSales(vendorID);
+    setState(() {
+      totalSales = sales;  // Update totalSales variable
+    });
+  }
+
+  Future<void> calculateQuantitySold(String vendorID) async {
+    int quantitySold = await productImpl.calculateVendorQuantitySold(vendorID);
+    setState(() {
+      totalQuantity = quantitySold;  // Update totalSales variable
+    });
   }
 
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Padding(
+      child: isLoading ? const Center(child: CircularProgressIndicator())
+        :Padding(
         padding: const EdgeInsets.fromLTRB(18, 18, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +166,7 @@ class _VendorhomeState extends State<Vendorhome> {
                           children: [
                             Image.asset("assets/images/bar-chart.png"),
                             const SizedBox(height: 12),
-                            const Text("3069", style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
+                            Text("$totalQuantity", style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
                             const Text("Sold Product", style: TextStyle(fontSize: 15, color: Colors.grey)),
                           ],
                         ),
@@ -163,7 +199,7 @@ class _VendorhomeState extends State<Vendorhome> {
                             children: [
                               Image.asset("assets/images/dollar-symbol.png"),
                               const SizedBox(height: 12),
-                              const Text("RM9999.99", style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
+                              Text("RM${totalSales.toStringAsFixed(2)}", style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
                               const Text("Total Sales", style: TextStyle(fontSize: 15, color: Colors.grey)),
                             ],
                           ),
@@ -214,8 +250,36 @@ class _VendorhomeState extends State<Vendorhome> {
                   ]
                 ),
                 const SizedBox(height: 10),
-                OrderContainer(vendorData: vendorData!),
-                OrderContainer(vendorData: vendorData!),
+                StreamBuilder(
+                    stream: paymentImpl.checkVendorOrders(vendorData!),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text("No Orders available"));
+                      }
+
+                      List<Payment> paymentList = snapshot.data!;
+
+                      // Return only the first 3 orders, or all if there are fewer than 3
+                      List<Payment> firstThreePayments = paymentList.take(3).toList();
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (var order in firstThreePayments)
+                            OrderContainer(
+                              vendorData: vendorData!,
+                              orderData: order,
+                            ),
+                        ],
+                      );
+                    }
+                )
+                // OrderContainer(vendorData: vendorData!),
+                // OrderContainer(vendorData: vendorData!),
               ],
             )
           ],
