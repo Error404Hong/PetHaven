@@ -171,14 +171,6 @@ class _CustHomePageState extends State<CustHomePage> {
                     );
                   },
                 ),
-                TextButton(onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CheckOrderStatus(user: userData!))
-                  );
-                },
-                  child: const Text("Check my purchase")
-                )
               ],
             ),
           ),

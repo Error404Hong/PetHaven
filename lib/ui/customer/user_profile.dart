@@ -11,6 +11,7 @@ import '../../data/model/chat.dart';
 import '../../data/model/user.dart' as user_model;
 import '../../data/repository/chat/chat_repository_impl.dart';
 import 'alternative_app_bar.dart';
+import 'check_order_status.dart';
 import 'edit_profile.dart';
 import 'upcoming_schedules.dart';
 import 'reset_password.dart';
@@ -225,6 +226,40 @@ class _UserProfileState extends State<UserProfile> {
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content
                           children: [
                             Text('View', style: TextStyle(color: Color.fromRGBO(0, 139, 139, 1)),),
+                            SizedBox(width: 5), // Space between text and icon
+                            Icon(Icons.navigate_next_rounded, color: Color.fromRGBO(0, 139, 139, 1)),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        child: Row(
+                          children: [
+                            Image.asset('assets/images/delivery.png'),
+                            const SizedBox(width: 15),
+                            const Text(
+                              'Check Delivery Status',
+                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                            )
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => CheckOrderStatus(user: widget.user))
+                          );
+                        },
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min, // Ensures button wraps content
+                          children: [
+                            Text('Check', style: TextStyle(color: Color.fromRGBO(0, 139, 139, 1)),),
                             SizedBox(width: 5), // Space between text and icon
                             Icon(Icons.navigate_next_rounded, color: Color.fromRGBO(0, 139, 139, 1)),
                           ],
