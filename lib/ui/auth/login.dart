@@ -28,7 +28,7 @@ class _LoginState extends State<Login> {
   }
 
   void _navigateToHome(){
-    context.go("/admin");
+    context.go("/home");
   }
   void _navigateToForgotPassword() {
     String email = _emailController.text.trim();

@@ -53,7 +53,7 @@ class UserRepoImpl extends UserRepo {
       final firebaseUser = userCredential.user;
       final userUID = firebaseUser?.uid;
       final hashedPassword = md5.convert(utf8.encode(password)).toString();
-      final user = user_model.User(id: userUID, name: name, email: email, password: hashedPassword, role: role);
+      final user = user_model.User(id: userUID, name: name, email: email, password: hashedPassword, role: role,phoneNumber: "NA",gender: "Other");
       await collection.doc(userUID).set(user.toMap());
     } catch (e) {
       debugPrint("Error registering: $e");

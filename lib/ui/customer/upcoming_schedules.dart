@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import '../../data/model/event.dart';
+import '../../data/model/user.dart';
+import '../../data/repository/customers/event_implementation.dart';
 import 'alternative_app_bar.dart';
 import 'activity_box.dart';
 
 class UpcomingSchedules extends StatefulWidget {
-  const UpcomingSchedules({super.key});
+  final User user;
+  const UpcomingSchedules({super.key, required this.user});
 
   @override
   State<UpcomingSchedules> createState() => _UpcomingSchedulesState();
 }
 
 class _UpcomingSchedulesState extends State<UpcomingSchedules> {
+  EventImplementation eventImpl = EventImplementation();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: const AlternativeAppBar(pageTitle: "Upcoming Schedules"),
+      appBar: AlternativeAppBar(pageTitle: "Upcoming Schedules", user: widget.user),
       body: Padding(
           padding: const EdgeInsets.fromLTRB(23.0, 28.0, 15.0, 15.0),
           child: Column(
@@ -25,17 +30,23 @@ class _UpcomingSchedulesState extends State<UpcomingSchedules> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 18),
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 1,
-                    childAspectRatio: 1.8,
-                  ),
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return const ActivityBox();
-                  },
-                ),
+              StreamBuilder<List<Event>>(
+                stream: eventImpl.getJoinedEvents(widget.user), // Pass user.id directly
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text("No upcoming activities"));
+                  }
+
+                  List<Event> events = snapshot.data!; // Already a List<Event>
+
+                  return Column(
+                    children: events.map((event) => ActivityBox(user: widget.user!, event: event)).toList(),
+                  );
+                },
               ),
             ],
           )

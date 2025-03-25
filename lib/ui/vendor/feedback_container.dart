@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../data/model/user.dart';
 
-class CustomerReviewBox extends StatefulWidget {
-  const CustomerReviewBox({super.key});
+class FeedbackContainer extends StatefulWidget {
+  final User vendorData;
+  const FeedbackContainer({super.key, required this.vendorData});
 
   @override
-  State<CustomerReviewBox> createState() => _CustomerReviewBoxState();
+  State<FeedbackContainer> createState() => _FeedbackContainerState();
 }
 
-class _CustomerReviewBoxState extends State<CustomerReviewBox> {
+class _FeedbackContainerState extends State<FeedbackContainer> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -69,3 +71,5 @@ class _CustomerReviewBoxState extends State<CustomerReviewBox> {
     );
   }
 }
+
+

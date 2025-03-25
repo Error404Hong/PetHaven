@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pet_haven/ui/vendor/vendor_profile.dart';
 import '../../data/model/user.dart';
-import 'user_profile.dart';
 
-class AlternativeAppBar extends StatelessWidget implements PreferredSizeWidget {
+
+class VendorAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String pageTitle;
-  final User user;
-  const AlternativeAppBar({super.key, required this.pageTitle, required this.user});
+  final User vendorData;
+  const VendorAppBar({super.key, required this.pageTitle, required this.vendorData});
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +26,10 @@ class AlternativeAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 10.0),
           child: GestureDetector(
             onTap: () {
-              if(pageTitle != 'My Profile' && pageTitle != "Edit Profile" && pageTitle != "Upcoming Schedules" && pageTitle != "Reset Password") {
                 Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => UserProfile(user: user))
+                    MaterialPageRoute(builder: (context) => VendorProfile(vendorData: vendorData))
                 );
-              }
             },
             child: const CircleAvatar(
               radius: 18,

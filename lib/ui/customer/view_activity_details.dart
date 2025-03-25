@@ -135,7 +135,7 @@ class _ActivityDetailsState extends State<ActivityDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-        appBar: const AlternativeAppBar(pageTitle: "Activity Details"),
+        appBar: AlternativeAppBar(pageTitle: "Activity Details", user: widget.user),
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 18, 15, 10),

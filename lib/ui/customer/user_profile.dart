@@ -2,6 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pet_haven/ui/customer/manage_organized_events.dart';
+import '../../core/service/shared_preferences.dart';
+import '../../data/model/user.dart';
+import '../../data/repository/user/user_repository_impl.dart';
 import '../../data/model/chat.dart';
 import '../../data/repository/chat/chat_repository_impl.dart';
 import 'alternative_app_bar.dart';
@@ -10,13 +14,48 @@ import 'upcoming_schedules.dart';
 import 'reset_password.dart';
 
 class UserProfile extends StatefulWidget {
-  const UserProfile({super.key});
+  final User user;
+  const UserProfile({super.key, required this.user});
 
   @override
   State<UserProfile> createState() => _UserProfileState();
 }
 
 class _UserProfileState extends State<UserProfile> {
+  UserRepoImpl UserRepo = UserRepoImpl();
+  late User _userInfo;
+  bool _isLoading = true;
+
+  void getUserID() async {
+    User? userDetails= await UserRepo.getUserById(widget.user.id);
+    setState(() {
+      _userInfo = userDetails!;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUserID();
+  }
+
+  void _logout() async {
+    await SharedPreference.setIsLoggedIn(false);
+    UserRepo.logout();
+    context.go('/login');
+  }
+
+  Future<void> navigateToEditProfile() async {
+    final updatedUser = await context.push<User>('/edit_profile', extra: _userInfo);
+
+    if (updatedUser != null) {
+      setState(() {
+        _userInfo = updatedUser; // Update the profile with new data
+      });
+    }
+  }
+
   @override
   ChatRepositoryImpl chatRepo = ChatRepositoryImpl();
   void _navigateToChat () async{
@@ -53,8 +92,11 @@ class _UserProfileState extends State<UserProfile> {
       }
   }
   Widget build(BuildContext context) {
-    return Container(
-        child: Padding(
+    return Scaffold(
+        backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
+        appBar: AlternativeAppBar(pageTitle: "My Profile", user: widget.user),
+        body: _isLoading ? const Center(child: CircularProgressIndicator())
+        :Padding(
           padding: const EdgeInsets.fromLTRB(28, 48, 28, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,26 +112,21 @@ class _UserProfileState extends State<UserProfile> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Hong Jing Xin',
-                      style: TextStyle(
+                    Text(
+                      _userInfo.name,
+                      style: const TextStyle(
                         fontSize: 33,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'hongjx0321@gmail.com',
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                    Text(
+                      _userInfo.email,
+                      style: const TextStyle(fontSize: 16, color: Colors.black54),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const EditProfile())
-                        );
-                      },
+                      onPressed: navigateToEditProfile,
                       style: const ButtonStyle(
                         backgroundColor: WidgetStatePropertyAll<Color>(
                             Color.fromRGBO(172, 208, 193, 1)),
@@ -130,8 +167,8 @@ class _UserProfileState extends State<UserProfile> {
                       TextButton(
                         onPressed: () {
                           Navigator.push(
-                              context, 
-                              MaterialPageRoute(builder: (context) => const UpcomingSchedules())
+                              context,
+                              MaterialPageRoute(builder: (context) => UpcomingSchedules(user: widget.user))
                           );
                         },
                         child: const Row(
@@ -162,7 +199,12 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ManageOrganizedEvents(user: widget.user))
+                          );
+                        },
                         child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content
                           children: [
@@ -193,8 +235,8 @@ class _UserProfileState extends State<UserProfile> {
                       TextButton(
                         onPressed: () {
                           Navigator.push(
-                              context, 
-                              MaterialPageRoute(builder: (context) => const ResetPassword())
+                              context,
+                              MaterialPageRoute(builder: (context) => ResetPassword(user: widget.user))
                           );
                         },
                         child: const Row(
@@ -254,7 +296,7 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () => _logout(),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content
                           children: [

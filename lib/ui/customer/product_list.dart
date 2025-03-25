@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_haven/data/repository/vendors/product_implementation.dart';
+import '../../data/model/product.dart';
 import 'appbar.dart';
 import 'product-box.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
@@ -12,22 +15,88 @@ class ProductList extends StatefulWidget {
 }
 
 class _ProductListState extends State<ProductList> {
-  String dropDownValue = "Item 1";
+  ProductImplementation productImpl = ProductImplementation();
 
-  var items = [
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-    'Item 5',
+  List<Product> searchResults = [];
+  String? selectedCategory = "ALL";
+  bool isLoading = false;
+  String errorMessage = "";
+
+  final List<String> categories = [
+    "ALL",
+    "Pet Food",
+    "Pet Toys",
+    "Pet Treats",
+    "Pet Accessories",
+    "Pet Grooming",
+    "Pet Health & Wellness",
+    "Pet Bedding & Housing",
+    "Pet Training & Behavior",
+    "Pet Travel & Carriers",
+    "Pet Cleaning & Waste Management",
+    "Pet Habitat & Furniture",
+    "Pet Diapers & Hygiene"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
+
+  void fetchProducts() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = "";
+    });
+
+    try {
+      QuerySnapshot result;
+
+      if (selectedCategory == "ALL") {
+        result = await FirebaseFirestore.instance.collection('Products').get();
+      } else {
+        result = await FirebaseFirestore.instance
+            .collection('Products')
+            .where('category', isEqualTo: selectedCategory)
+            .get();
+      }
+
+      List<Product> finalResults = result.docs.map((doc) => Product(
+        productID: doc.id,
+        productName: doc['productName'],
+        description: doc['description'],
+        category: doc['category'],
+        price: doc['price'],
+        inventoryQuantity: doc['inventoryQuantity'],
+        quantitySold: doc['quantitySold'],
+        vendorID: doc['vendorID'],
+        imagePath: doc['imagePath'],
+      )).toList();
+
+      setState(() {
+        searchResults = finalResults;
+        isLoading = false;
+      });
+
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = "An error occurred while fetching products.";
+      });
+      print("Error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: const CustomAppBar(
-          title: "Product List", subTitle: "Looking for Something?"),
+      appBar: CustomAppBar(
+        title: "Product List",
+        subTitle: "Looking for Something?",
+        user: widget.userData,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -41,55 +110,73 @@ class _ProductListState extends State<ProductList> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Dog Kibbles',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          '50 in-store products',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Color.fromRGBO(0, 139, 139, 1),
-                          ),
-                        ),
-                      ],
+                    StreamBuilder<List<Product>>(
+                      stream: productImpl.getAllProducts(),
+                      builder: (context, snapshot) {
+                        int productCount = snapshot.hasData ? snapshot.data!.length : 0;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'All Products',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '$productCount in-store products',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Color.fromRGBO(0, 139, 139, 1),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     SizedBox(
-                      width: 130,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 1.5),
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.white,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: dropDownValue,
-                            icon: const Icon(Icons.keyboard_arrow_down),
-                            style: const TextStyle(fontSize: 16, color: Colors.black),
-                            borderRadius: BorderRadius.circular(10),
-                            isExpanded: true,
-                            items: items.map((String item) {
-                              return DropdownMenuItem(
-                                value: item,
-                                child: Text(item),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                dropDownValue = newValue!;
-                              });
-                            },
+                      width: 190,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 1.5),
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: DropdownButtonFormField<String>(
+                              value: selectedCategory,
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              style: const TextStyle(fontSize: 14, color: Colors.black),
+                              borderRadius: BorderRadius.circular(10),
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12), // Adjust padding
+                              ),
+                              items: categories.map((String item) {
+                                return DropdownMenuItem(
+                                  value: item,
+                                  child: Text(
+                                    item,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis, // Prevents text overflow
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedCategory = newValue;
+                                });
+                                fetchProducts();
+                              },
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ],
@@ -101,22 +188,30 @@ class _ProductListState extends State<ProductList> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: GridView.builder(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator()) // Show loading indicator
+                  : errorMessage.isNotEmpty
+                  ? Center(child: Text(errorMessage, style: const TextStyle(color: Colors.red)))
+                  : searchResults.isEmpty
+                  ? const Center(child: Text("No products available"))
+                  : GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 20,
                   mainAxisSpacing: 30,
                   childAspectRatio: 0.85,
                 ),
-                itemCount: 10,
+                itemCount: searchResults.length,
                 itemBuilder: (context, index) {
-                  return const ProductBox();
+                  return ProductBox(
+                    user: widget.userData,
+                    productData: searchResults[index],
+                  );
                 },
               ),
             ),
           ),
           const SizedBox(height: 20),
-
         ],
       ),
     );

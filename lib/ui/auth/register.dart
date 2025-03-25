@@ -37,15 +37,15 @@ class _RegisterState extends State<Register> {
   bool isLoading = false;
 
   int _selectedRole = 1; // Default to "Customer"
-  void _showPass(bool visibility){
+  void _showPass() {
     setState(() {
-      showPass = !visibility;
+      showPass = !showPass;
     });
   }
 
-  void _showConPass(bool visibility){
+  void _showConPass() {
     setState(() {
-      showConPass = !visibility;
+      showConPass = !showConPass;
     });
   }
 
@@ -54,7 +54,8 @@ class _RegisterState extends State<Register> {
   }
 
   void _navigateToHome(){
-    context.go("/admin");
+    context.go("/home");
+
   }
 
   Future<void> register(context) async {
@@ -64,56 +65,57 @@ class _RegisterState extends State<Register> {
       String password = _passwordController.text.trim();
       String passwordConfirm = _passwordConfirmController.text.trim();
 
-      setState(() {
-        if (firstName.isEmpty) {
-          _firstNameError = "This field cannot be empty";
-          return;
-        } else {
-          _firstNameError = "";
-        }
-
-        if (!EmailValidator.validate(email)) {
-          _emailError = "Invalid email format";
-          return;
-        } else {
-          _emailError = "";
-        }
-
-        if (password.length < 8) {
-          _passwordError = "Password needs to be at least 8 characters long";
-          return;
-        } else {
-          _passwordError = "";
-        }
-
-        if (passwordConfirm != password) {
-          _passwordConfirmError = "Passwords must match";
-          return;
-        } else {
-          _passwordConfirmError = "";
-        }
-
-        isLoading = true;
-      });
-
-      if (_firstNameError.isEmpty && _emailError.isEmpty && _passwordError.isEmpty &&_passwordConfirmError.isEmpty) {
-        print("not empty");
-        var emailExists = await userRepo.checkEmailInFirebase(email);
-        if (emailExists) {
-          throw CustomException("An account was already registered to this email");
-        }
-        await userRepo.register(firstName, email, password,_selectedRole);
-        showSnackbar(context, "Register successful", Colors.green);
-        _navigateToHome();
-        isLoading = false;
+      // VALIDATION (Stop early if invalid)
+      if (firstName.isEmpty) {
+        setState(() => _firstNameError = "This field cannot be empty");
+        return;
+      } else {
+        _firstNameError = "";
       }
+
+      if (!EmailValidator.validate(email)) {
+        setState(() => _emailError = "Invalid email format");
+        return;
+      } else {
+        _emailError = "";
+      }
+
+      if (password.length < 8) {
+        setState(() => _passwordError = "Password needs to be at least 8 characters long");
+        return;
+      } else {
+        _passwordError = "";
+      }
+
+      if (passwordConfirm != password) {
+        setState(() => _passwordConfirmError = "Passwords must match");
+        return;
+      } else {
+        _passwordConfirmError = "";
+      }
+
+      setState(() => isLoading = true); // Only set loading after validation passes
+
+      // CHECK IF EMAIL EXISTS
+      var emailExists = await userRepo.checkEmailInFirebase(email);
+      if (emailExists) {
+        throw CustomException("An account was already registered to this email");
+      }
+
+      // REGISTER USER
+      print("Registering user...");
+      await userRepo.register(firstName, email, password, _selectedRole);
+      print("User registered successfully");
+
+      showSnackbar(context, "Register successful", Colors.green);
+      _navigateToHome();
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
       showSnackbar(context, e.toString(), Colors.red);
+    } finally {
+      setState(() => isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -235,8 +237,8 @@ class _RegisterState extends State<Register> {
                               labelText: "Password",
                               prefixIcon: const Icon(Icons.password),
                               suffixIcon: IconButton(
-                                onPressed: () => _showPass(showPass),
-                                icon: const Icon(Icons.remove_red_eye),
+                                onPressed: _showPass,
+                                icon: Icon(showPass ? Icons.visibility : Icons.visibility_off),
                               ),
                               errorText:
                               _passwordError.isEmpty ? null : _passwordError,
@@ -258,8 +260,8 @@ class _RegisterState extends State<Register> {
                             decoration: InputDecoration(
                               hintText: "Confirm Password",
                               suffixIcon: IconButton(
-                                onPressed: () => _showConPass(showConPass),
-                                icon:const Icon(Icons.remove_red_eye),
+                                onPressed: _showConPass,
+                                icon: Icon(showConPass ? Icons.visibility : Icons.visibility_off),
                               ),
                               errorText: _passwordConfirmError.isEmpty ? null : _passwordConfirmError,
                               border: OutlineInputBorder(
@@ -313,7 +315,7 @@ class _RegisterState extends State<Register> {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("Don't have an account? "),
+                              Text("Already have an account? "),
                               Text(
                                 "Sign in",
                                 style: TextStyle(

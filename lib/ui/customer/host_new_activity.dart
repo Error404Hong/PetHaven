@@ -201,7 +201,7 @@ class _HostNewActivityState extends State<HostNewActivity> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: const AlternativeAppBar(pageTitle: "Organize Event"),
+      appBar: AlternativeAppBar(pageTitle: "Organize Event", user: widget.userData),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 28, 18, 10),
