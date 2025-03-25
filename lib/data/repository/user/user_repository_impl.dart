@@ -91,4 +91,43 @@ class UserRepoImpl extends UserRepo {
       debugPrint("Error signing out: $e");
     }
   }
+  @override
+  Future<List<user_model.User>> getAllUsers() async {
+    try {
+      QuerySnapshot querySnapshot = await collection.get();
+      return querySnapshot.docs
+          .map((doc) => user_model.User.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint("Error fetching users: $e");
+      return [];
+    }
+  }
+  @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      // Get user email before deletion
+      DocumentSnapshot userDoc = await collection.doc(userId).get();
+      String? email = userDoc["email"];
+
+      if (email != null) {
+        // Delete from Firestore
+        await collection.doc(userId).delete();
+
+        // Find the Firebase Auth user
+        List<String> signInMethods = await firebaseAuth.fetchSignInMethodsForEmail(email);
+        if (signInMethods.isNotEmpty) {
+          UserCredential userCredential = await firebaseAuth.signInWithEmailAndPassword(
+            email: email,
+            password: "dummyPassword", // Firebase requires re-authentication before deletion
+          );
+
+          // Delete user from Firebase Authentication
+          await userCredential.user?.delete();
+        }
+      }
+    } catch (e) {
+      debugPrint("Error deleting user: $e");
+    }
+  }
 }

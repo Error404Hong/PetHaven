@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pet_haven/data/repository/user/user_repository_impl.dart';
+import 'package:pet_haven/ui/Admin/manageUser.dart';
 import 'package:pet_haven/ui/component/bottom_nav.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_haven/ui/Admin/adminHome.dart';
@@ -8,6 +9,7 @@ import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
 import 'package:pet_haven/ui/vendor/vendorHome.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
+import 'package:pet_haven/ui/customer/user_profile.dart';
 
 import 'customer/appbar.dart';
 import 'customer/homePage.dart';
@@ -29,6 +31,15 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _loadCurrentUser();
+  }
+
+  // hello from yan han
+  int _page = 2;
+  UserRepoImpl UserRepo = UserRepoImpl();
+  User? currentUser;
+  user_model.User? userDetails;
+  void _logout() async {
+    UserRepo.logout();
   }
 
   void _loadCurrentUser() async {
@@ -69,6 +80,13 @@ class _HomeState extends State<Home> {
     debugPrint("Failed to fetch user data after 5 attempts.");
     setState(() => isLoading = false);
   }
+  final List<Widget> _pages = [
+    const CustHomePage(),
+    Center(child: Text("Vendor Home Page", style: TextStyle(fontSize: 24))),
+    const Adminhome(), // Middle button (default)
+    const ManageUser(),
+    const UserProfile(),
+  ];
 
   Widget _getHomePage() {
     if (userDetails == null) {
@@ -107,7 +125,9 @@ class _HomeState extends State<Home> {
         color: const Color(0xfff7f6ee),
         child: SafeArea(
           child: SingleChildScrollView(
-            child: Column(children: <Widget>[_getHomePage()]),
+            child: Column(children: <Widget>[
+              _getHomePage()
+            ]),
           ),
         ),
       ),

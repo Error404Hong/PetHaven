@@ -1,77 +1,60 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/service/shared_preferences.dart';
-import '../component/custom_auth_painter.dart';
+import 'package:pet_haven/ui/component/custom_auth_painter_register.dart';
+
+import '../../core/custom_exception.dart';
 import '../../data/repository/user/user_repository_impl.dart';
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+import '../component/snackbar.dart';
+
+class ForgotPassword extends StatefulWidget {
+  final String email;
+  const ForgotPassword({super.key, required this.email});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<ForgotPassword> createState() => _ForgotPassword();
 }
 
-class _LoginState extends State<Login> {
+class _ForgotPassword extends State<ForgotPassword> {
   UserRepoImpl userRepo = UserRepoImpl();
+  final _firstNameFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
+  final _passwordConfirmFocusNode = FocusNode();
+
+  final _firstNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  var _passwordError = "";
+  final _passwordConfirmController = TextEditingController();
+
+  var _firstNameError = "";
   var _emailError = "";
-  bool isLoading = false;
+  var _passwordError = "";
+  var _passwordConfirmError = "";
+
+  var showConPass = true;
   var showPass = true;
 
+  bool isLoading = false;
+
+  int _selectedRole = 1; // Default to "Customer"
   void _showPass(bool visibility){
     setState(() {
       showPass = !visibility;
     });
   }
 
-  void _navigateToHome(){
-    context.go("/home");
-  }
-  void _navigateToForgotPassword() {
-    String email = _emailController.text.trim();
-    if (email.isEmpty) {
-      setState(() {
-        _emailError = "Please enter your email.";
-      });
-      return;
-    }
+  void _showConPass(bool visibility){
     setState(() {
-      _emailError = ""; // Clear any previous error
+      showConPass = !visibility;
     });
-    context.go("forgotPassword", extra: email);
   }
 
-  Future<void> login(context) async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      final bool success = await userRepo.login(email, password);
-      // Navigate to admin or dashboard on successful login
-      if(success){
-        await SharedPreference.setIsLoggedIn(true);
-        _navigateToHome();
-      }
-    } catch (e) {
-      debugPrint("Error logging in: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed. Please try again.")),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
+  void _navigateToLogin(){
+    context.go("/login");
   }
 
-  void _navigateToRegister() {
-    context.go("/register");
-  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +65,7 @@ class _LoginState extends State<Login> {
           child: Stack(
             children: [
               CustomPaint(
-                painter: CurvePainter(),
+                painter: CurvePainterRegister(),
                 child: Container(
                   height: MediaQuery.of(context).size.height,
                 ),
@@ -101,17 +84,37 @@ class _LoginState extends State<Login> {
                     margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                     alignment: Alignment.center,
                     child: const Text(
-                      "Welcome to PetHaven",
+                      "Forgot Password",
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.ltr,
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28.0),
                     ),
                   ),
-
                   Container(
                     margin: const EdgeInsets.fromLTRB(40, 0, 40, 0),
                     child: Column(
                       children: [
+
+                        Material(
+                          elevation: 10,
+                          borderRadius: BorderRadius.circular(10),
+                          child: TextField(
+                            focusNode: _firstNameFocusNode,
+                            controller: _firstNameController,
+                            decoration: InputDecoration(
+                              hintText: "Name",
+                              errorText: _firstNameError.isEmpty ? null : _firstNameError,
+                              suffixIcon: const Icon(Icons.person),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(width: 5.0),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20,),
+
                         Material(
                           elevation: 10,
                           borderRadius: BorderRadius.circular(10),
@@ -119,10 +122,12 @@ class _LoginState extends State<Login> {
                             focusNode: _emailFocusNode,
                             controller: _emailController,
                             decoration: InputDecoration(
-                              labelText: "Email",
+                              hintText: "Email",
                               errorText: _emailError.isEmpty ? null : _emailError,
-                              prefixIcon: const Icon(Icons.email),
-                              // suffixIcon: isEmailVerified ? const Icon(Icons.verified) : null,
+                              suffixIcon: const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.email),
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: const BorderSide(width: 5.0),
@@ -141,10 +146,10 @@ class _LoginState extends State<Login> {
                             obscureText: showPass,
                             controller: _passwordController,
                             decoration: InputDecoration(
-                              labelText: "Password",
+                              labelText: "New Password",
                               prefixIcon: const Icon(Icons.password),
                               suffixIcon: IconButton(
-                                onPressed: () => _showPass(true),
+                                onPressed: () => _showPass(showPass),
                                 icon: const Icon(Icons.remove_red_eye),
                               ),
                               errorText:
@@ -157,13 +162,35 @@ class _LoginState extends State<Login> {
                         ),
 
                         const SizedBox(height: 20,),
+                        Material(
+                          elevation: 10,
+                          borderRadius: BorderRadius.circular(10),
+                          child: TextField(
+                            focusNode: _passwordConfirmFocusNode,
+                            obscureText: showConPass,
+                            controller: _passwordConfirmController,
+                            decoration: InputDecoration(
+                              hintText: "Confirm New Password",
+                              suffixIcon: IconButton(
+                                onPressed: () => _showConPass(showConPass),
+                                icon:const Icon(Icons.remove_red_eye),
+                              ),
+                              errorText: _passwordConfirmError.isEmpty ? null : _passwordConfirmError,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20,),
 
                         GestureDetector(
-                          onTap: _navigateToForgotPassword,
+                          // onTap: _navigateToForgotPassword,
                           child: const Text(
-                            "Forgot password?",
+                            "Back to Login",
                             style: TextStyle(
-                                // color: Color(0XFF8BC4A8),
+                              // color: Color(0XFF8BC4A8),
                                 fontWeight: FontWeight.bold
                             ),
                           ),
@@ -174,7 +201,7 @@ class _LoginState extends State<Login> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => login(context),
+                            onPressed: (){},
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0XFF211f1f),
                                 shape: RoundedRectangleBorder(
@@ -186,7 +213,7 @@ class _LoginState extends State<Login> {
                             //     strokeWidth: 3, color: Colors.white)
                             //     :
                             const Text(
-                              "Login",
+                              "Confirm New Password",
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
                             ),
@@ -194,22 +221,6 @@ class _LoginState extends State<Login> {
                         ),
                         const SizedBox(
                           height: 20,
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToRegister(),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Don't have an account? "),
-                              Text(
-                                "Sign up",
-                                style: TextStyle(
-                                    // color: Color(0XFF8BC4A8),
-                                    fontWeight: FontWeight.bold
-                                ),
-                              )
-                            ],
-                          ),
                         ),
                       ],
                     ),

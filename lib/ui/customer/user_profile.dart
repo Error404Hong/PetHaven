@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pet_haven/ui/customer/manage_organized_events.dart';
 import '../../core/service/shared_preferences.dart';
 import '../../data/model/user.dart';
 import '../../data/repository/user/user_repository_impl.dart';
+import '../../data/model/chat.dart';
+import '../../data/repository/chat/chat_repository_impl.dart';
 import 'alternative_app_bar.dart';
 import 'edit_profile.dart';
 import 'upcoming_schedules.dart';
@@ -53,6 +57,40 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   @override
+  ChatRepositoryImpl chatRepo = ChatRepositoryImpl();
+  void _navigateToChat () async{
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+        DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
+      DatabaseEvent event = await ref.orderByChild("isClosed").equalTo(false).once();
+      DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.value == null) {
+        // No open chats exist, create a new one
+        Chat newChat = await chatRepo.createNewChat(userId);
+        context.go("/customer_support", extra: {"chatId": newChat.id});
+        print("No open chat, created new chat: ${newChat.id}");
+        return;
+      }
+
+      Map<dynamic, dynamic> chatData = snapshot.value as Map<dynamic, dynamic>;
+
+      // Find the chat that matches the userId
+      String? existingChatId;
+      chatData.forEach((key, value) {
+        if (value["userId"] == userId) {
+          existingChatId = value["id"];
+        }
+      });
+      print(existingChatId);
+      if (existingChatId != null) {
+        // Open chat exists, navigate to it
+        context.go("/customer_support", extra: existingChatId);
+      } else {
+        // No matching chat, create a new one
+        Chat newChat = await chatRepo.createNewChat(userId);
+        context.go("/customer_support", extra: newChat.id);
+      }
+  }
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
@@ -114,6 +152,7 @@ class _UserProfileState extends State<UserProfile> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
+
                         child: Row(
                           children: [
                             Image.asset('assets/images/calendar-icon.png'),
@@ -228,7 +267,7 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: _navigateToChat,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content
                           children: [

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pet_haven/ui/customer/edit_profile.dart';
 import 'package:pet_haven/ui/customer/user_profile.dart';
+import 'package:pet_haven/ui/admin/contactCustomerSupport.dart';
+import 'package:pet_haven/ui/auth/forgot_password.dart';
 import '../../data/model/user.dart' as user_model;
 import '../../data/model/user.dart';
 import '../../data/repository/user/user_repository.dart';
@@ -24,6 +26,10 @@ class NavRouter extends StatelessWidget {
   final _routes = [
     GoRoute(path: "/login", builder: (context, state) => const Login()),
     GoRoute(path: "/register", builder: (context,state) => const Register()),
+    GoRoute(path: "/forgotPassword", builder: (context,state){
+      final String email = state.extra as String;
+      return ForgotPassword(email: email);
+    },),
     GoRoute(path: "/home", builder: (context, state) => const Home()),
     GoRoute(path: "/homePage", builder: (context, state) => const CustHomePage()),
     GoRoute(path: "/vendorHome",builder: (context, state) => const Vendorhome()),
@@ -62,7 +68,11 @@ class NavRouter extends StatelessWidget {
         return EditProfile(user: userData);
       },
     )
-
+    GoRoute(path: "/admin", builder: (context, state) => const Home()),
+    GoRoute(path: "/customer_support", builder: (context, state) {
+      final String chatId = state.extra as String;
+      return ContactCustomerSupport(chatID: chatId);
+    })
 
   ];
 
