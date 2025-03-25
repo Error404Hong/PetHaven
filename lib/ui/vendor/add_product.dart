@@ -445,13 +445,13 @@ class _AddProductState extends State<AddProduct> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 15),
-                    backgroundColor: Color.fromRGBO(172, 208, 193, 1),
+                    backgroundColor: const Color.fromRGBO(172, 208, 193, 1),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: () => addProduct(context),
                   child: const Text(
                     "Upload Product",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black),
                   ),
                 ),
               ),
@@ -469,7 +469,7 @@ class _AddProductState extends State<AddProduct> {
                       onPressed: () => updateProduct(context, widget.product!),
                       child: const Text(
                         "Update Product",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
                       ),
                     ),
                   ),
@@ -484,7 +484,7 @@ class _AddProductState extends State<AddProduct> {
                       onPressed: () => deleteProduct(context, widget.product!),
                       child: const Text(
                         "Delete Product",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
                       ),
                     ),
                   ),
