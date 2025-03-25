@@ -48,7 +48,9 @@ class BalanceCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+
           children: [
+
             SizedBox(
               height: 120,
               child:

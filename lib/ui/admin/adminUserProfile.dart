@@ -10,20 +10,18 @@ import 'package:pet_haven/data/repository/user/user_repository_impl.dart';
 import '../../data/model/chat.dart';
 import '../../data/model/user.dart' as user_model;
 import '../../data/repository/chat/chat_repository_impl.dart';
-import 'alternative_app_bar.dart';
-import 'edit_profile.dart';
-import 'upcoming_schedules.dart';
-import 'reset_password.dart';
+import '../customer/reset_password.dart';
 
-class UserProfile extends StatefulWidget {
+
+class Adminuserprofile extends StatefulWidget {
   final user_model.User user;
-  const UserProfile({super.key, required this.user});
+  const Adminuserprofile({super.key, required this.user});
 
   @override
-  State<UserProfile> createState() => _UserProfileState();
+  State<Adminuserprofile> createState() => _UserProfileState();
 }
 
-class _UserProfileState extends State<UserProfile> {
+class _UserProfileState extends State<Adminuserprofile> {
   UserRepoImpl UserRepo = UserRepoImpl();
   late user_model.User _userInfo;
   bool _isLoading = true;
@@ -75,43 +73,41 @@ class _UserProfileState extends State<UserProfile> {
   }
   void _navigateToChat () async{
 
-      DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
-      DatabaseEvent event = await ref.orderByChild("isClosed").equalTo(false).once();
-      DataSnapshot snapshot = event.snapshot;
+    DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
+    DatabaseEvent event = await ref.orderByChild("isClosed").equalTo(false).once();
+    DataSnapshot snapshot = event.snapshot;
 
-      if (snapshot.value == null) {
-        // No open chats exist, create a new one
-        Chat newChat = await chatRepo.createNewChat(userId);
-        context.go("/customer_support", extra: {"chatId": newChat.id});
-        print("No open chat, created new chat: ${newChat.id}");
-        return;
+    if (snapshot.value == null) {
+      // No open chats exist, create a new one
+      Chat newChat = await chatRepo.createNewChat(userId);
+      context.go("/customer_support", extra: {"chatId": newChat.id});
+      print("No open chat, created new chat: ${newChat.id}");
+      return;
+    }
+
+    Map<dynamic, dynamic> chatData = snapshot.value as Map<dynamic, dynamic>;
+
+    // Find the chat that matches the userId
+    String? existingChatId;
+    chatData.forEach((key, value) {
+      if (value["userId"] == userId) {
+        existingChatId = value["id"];
       }
-
-      Map<dynamic, dynamic> chatData = snapshot.value as Map<dynamic, dynamic>;
-
-      // Find the chat that matches the userId
-      String? existingChatId;
-      chatData.forEach((key, value) {
-        if (value["userId"] == userId) {
-          existingChatId = value["id"];
-        }
-      });
-      print(existingChatId);
-      if (existingChatId != null) {
-        // Open chat exists, navigate to it
-        context.go("/customer_support", extra: existingChatId);
-      } else {
-        // No matching chat, create a new one
-        Chat newChat = await chatRepo.createNewChat(userId);
-        context.go("/customer_support", extra: newChat.id);
-      }
+    });
+    print(existingChatId);
+    if (existingChatId != null) {
+      // Open chat exists, navigate to it
+      context.go("/customer_support", extra: existingChatId);
+    } else {
+      // No matching chat, create a new one
+      Chat newChat = await chatRepo.createNewChat(userId);
+      context.go("/customer_support", extra: newChat.id);
+    }
   }
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-        appBar: AlternativeAppBar(pageTitle: "My Profile", user: widget.user),
-        body: _isLoading ? const Center(child: CircularProgressIndicator())
-        :Padding(
+    return Container(
+        child: _isLoading ? const Center(child: CircularProgressIndicator())
+            :Padding(
           padding: const EdgeInsets.fromLTRB(28, 48, 28, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,23 +175,6 @@ class _UserProfileState extends State<UserProfile> {
                           ],
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => UpcomingSchedules(user: widget.user))
-
-                          );
-                        },
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min, // Ensures button wraps content
-                          children: [
-                            Text('View', style: TextStyle(color: Color.fromRGBO(0, 139, 139, 1)),),
-                            SizedBox(width: 5), // Space between text and icon
-                            Icon(Icons.navigate_next_rounded, color: Color.fromRGBO(0, 139, 139, 1)),
-                          ],
-                        ),
-                      )
                     ],
                   ),
                   const SizedBox(height: 10),

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pet_haven/data/repository/user/user_repository_impl.dart';
 import 'package:pet_haven/ui/Admin/manageUser.dart';
+import 'package:pet_haven/ui/admin/adminAppBar.dart';
+import 'package:pet_haven/ui/admin/adminUserProfile.dart';
 import 'package:pet_haven/ui/component/bottom_nav.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_haven/ui/Admin/adminHome.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
-import 'package:pet_haven/ui/customer/alternative_app_bar.dart';
 import 'package:pet_haven/ui/vendor/vendorHome.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
@@ -32,12 +33,9 @@ class _HomeState extends State<Home> {
     super.initState();
     _loadCurrentUser();
   }
-
   // hello from yan han
   int _page = 2;
   UserRepoImpl UserRepo = UserRepoImpl();
-  User? currentUser;
-  user_model.User? userDetails;
   void _logout() async {
     UserRepo.logout();
   }
@@ -80,13 +78,7 @@ class _HomeState extends State<Home> {
     debugPrint("Failed to fetch user data after 5 attempts.");
     setState(() => isLoading = false);
   }
-  final List<Widget> _pages = [
-    const CustHomePage(),
-    Center(child: Text("Vendor Home Page", style: TextStyle(fontSize: 24))),
-    const Adminhome(), // Middle button (default)
-    const ManageUser(),
-    const UserProfile(),
-  ];
+
 
   Widget _getHomePage() {
     if (userDetails == null) {
@@ -104,6 +96,13 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> _pages = [
+      const CustHomePage(),
+      Center(child: Text("Vendor Home Page", style: TextStyle(fontSize: 24))),
+      const Adminhome(), // Middle button (default)
+      const ManageUser(),
+      Adminuserprofile(user: userDetails ?? user_model.User.empty()) // Default User
+    ];
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
       appBar: isLoading || userDetails == null
@@ -112,25 +111,33 @@ class _HomeState extends State<Home> {
           ? VendorAppBar(
         pageTitle: "PetHaven",
         vendorData: userDetails!,
+      ): userDetails!.role == 3
+      ?Adminappbar(
+        title: "PetHaven",
+        subTitle: "Welcome Back, ${userDetails?.name ?? "Loading..."}!",
+        user: userDetails!,
       )
           : CustomAppBar(
         title: "PetHaven",
         subTitle: "Welcome Back, ${userDetails?.name ?? "Loading..."}!",
         user: userDetails!,
       ),
-      bottomNavigationBar: isLoading ? null : BottomNav(onPageChanged: (index) => setState(() {})),
+      bottomNavigationBar: isLoading ? null : BottomNav(onPageChanged: (index) => setState(() {_page = index;})),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Container(
         color: const Color(0xfff7f6ee),
         child: SafeArea(
           child: SingleChildScrollView(
-            child: Column(children: <Widget>[
-              _getHomePage()
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+              (userDetails?.role == 3) ?
+              _pages[_page]:
+              _getHomePage(),
+
             ]),
-          ),
-        ),
       ),
-    );
+    )));
   }
 }

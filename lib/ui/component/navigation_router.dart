@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pet_haven/ui/customer/edit_profile.dart';
 import 'package:pet_haven/ui/customer/user_profile.dart';
 import 'package:pet_haven/ui/admin/contactCustomerSupport.dart';
+import 'package:pet_haven/ui/admin/selectChat.dart';
 import 'package:pet_haven/ui/auth/forgot_password.dart';
 import '../../data/model/user.dart' as user_model;
 import '../../data/model/user.dart';
@@ -67,12 +68,13 @@ class NavRouter extends StatelessWidget {
         final user_model.User userData = state.extra as user_model.User;
         return EditProfile(user: userData);
       },
-    )
+    ),
     GoRoute(path: "/admin", builder: (context, state) => const Home()),
     GoRoute(path: "/customer_support", builder: (context, state) {
       final String chatId = state.extra as String;
       return ContactCustomerSupport(chatID: chatId);
-    })
+    }),
+    GoRoute(path: "/selectChat", builder: (context, state) => const SelectChat())
 
   ];
 

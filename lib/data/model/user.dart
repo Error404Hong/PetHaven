@@ -55,4 +55,15 @@ class User {
         gender: map["gender"]
     );
   }
+  factory User.empty() {
+    return User(
+      id: "",
+      name: "Guest",
+      email: "guest@example.com",
+      password: "",
+      role: 0,
+      phoneNumber: "",
+      gender: "",
+    );
+  }
 }
