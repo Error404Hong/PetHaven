@@ -6,7 +6,9 @@ import 'package:pet_haven/ui/customer/manage_organized_events.dart';
 import '../../core/service/shared_preferences.dart';
 import '../../data/model/user.dart';
 import '../../data/repository/user/user_repository_impl.dart';
+import 'package:pet_haven/data/repository/user/user_repository_impl.dart';
 import '../../data/model/chat.dart';
+import '../../data/model/user.dart' as user_model;
 import '../../data/repository/chat/chat_repository_impl.dart';
 import 'alternative_app_bar.dart';
 import 'edit_profile.dart';
@@ -14,7 +16,7 @@ import 'upcoming_schedules.dart';
 import 'reset_password.dart';
 
 class UserProfile extends StatefulWidget {
-  final User user;
+  final user_model.User user;
   const UserProfile({super.key, required this.user});
 
   @override
@@ -23,11 +25,11 @@ class UserProfile extends StatefulWidget {
 
 class _UserProfileState extends State<UserProfile> {
   UserRepoImpl UserRepo = UserRepoImpl();
-  late User _userInfo;
+  late user_model.User _userInfo;
   bool _isLoading = true;
 
   void getUserID() async {
-    User? userDetails= await UserRepo.getUserById(widget.user.id);
+    user_model.User? userDetails= await UserRepo.getUserById(widget.user.id);
     setState(() {
       _userInfo = userDetails!;
       _isLoading = false;
@@ -38,6 +40,8 @@ class _UserProfileState extends State<UserProfile> {
   void initState() {
     super.initState();
     getUserID();
+    getUserDetails();
+
   }
 
   void _logout() async {
@@ -47,7 +51,7 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Future<void> navigateToEditProfile() async {
-    final updatedUser = await context.push<User>('/edit_profile', extra: _userInfo);
+    final updatedUser = await context.push<user_model.User>('/edit_profile', extra: _userInfo);
 
     if (updatedUser != null) {
       setState(() {
@@ -56,11 +60,22 @@ class _UserProfileState extends State<UserProfile> {
     }
   }
 
-  @override
+  user_model.User? userDetails;
   ChatRepositoryImpl chatRepo = ChatRepositoryImpl();
+  UserRepoImpl userRepo = UserRepoImpl();
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+  void getUserDetails () async {
+    user_model.User? userDetail = await userRepo.getUserById(userId);
+    setState(() {
+      userDetails = userDetail;
+    });
+  }
+  void _navigateToSelectChat (){
+    context.go("/selectChat");
+  }
   void _navigateToChat () async{
-      String userId = FirebaseAuth.instance.currentUser!.uid;
-        DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
+
+      DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
       DatabaseEvent event = await ref.orderByChild("isClosed").equalTo(false).once();
       DataSnapshot snapshot = event.snapshot;
 
@@ -169,6 +184,7 @@ class _UserProfileState extends State<UserProfile> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => UpcomingSchedules(user: widget.user))
+
                           );
                         },
                         child: const Row(
@@ -267,7 +283,9 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                       ),
                       TextButton(
-                        onPressed: _navigateToChat,
+                        onPressed:
+                        (userDetails?.role == 3 ? _navigateToSelectChat: _navigateToChat)
+                        ,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content
                           children: [

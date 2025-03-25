@@ -12,13 +12,26 @@ class ChatRepositoryImpl extends ChatRepository {
   final DatabaseReference _db = FirebaseDatabase.instance.ref();
 
   @override
-  Stream<List<Chat>> getActiveChats() {
-    return _db.child("chats").orderByChild("isClosed").equalTo(false).onValue.map((event) {
-      final data = event.snapshot.value as Map<dynamic, dynamic>?;
-      if (data == null) return [];
+  Stream<List<Chat>> getAllChats() {
+    return _db.child("chats").onValue.map((event) {
+      final dynamic snapshotValue = event.snapshot.value;
+      if (snapshotValue == null || snapshotValue is! Map<dynamic, dynamic>) {
+        return []; // Return an empty list if data is missing or invalid
+      }
+
+      final data = snapshotValue as Map<dynamic, dynamic>;
+
       return data.entries.map((entry) {
-        return Chat.fromMap({...entry.value, "id": entry.key});
-      }).toList();
+        final chatData = entry.value;
+
+        if (chatData is Map<dynamic, dynamic>) {
+          print("im trying to get all chat");
+
+          return Chat.fromMap({...chatData.cast<String, dynamic>(), "id": entry.key});
+        }
+
+        return null; // Skip invalid entries
+      }).whereType<Chat>().toList();
     });
   }
 
