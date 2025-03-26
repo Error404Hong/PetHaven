@@ -79,7 +79,7 @@ class _HorProductBoxState extends State<HorProductBox> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CheckFeedback(vendorData: widget.vendorData),
+                              builder: (context) => CheckFeedback(vendorData: widget.vendorData,product: widget.product),
                             ),
                           );
                         },

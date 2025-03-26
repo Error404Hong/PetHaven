@@ -78,6 +78,7 @@ class _ProductManagementState extends State<ProductManagement> {
         quantitySold: doc['quantitySold'],
         vendorID: doc['vendorID'],
         imagePath: doc['imagePath'],
+        reviews: doc['reviews']
       )).toList();
 
       setState(() {
@@ -129,6 +130,7 @@ class _ProductManagementState extends State<ProductManagement> {
           quantitySold: doc['quantitySold'],
           vendorID: doc['vendorID'],
           imagePath: doc['imagePath'],
+          reviews: doc['reviews']
       ))
           .toList();
 

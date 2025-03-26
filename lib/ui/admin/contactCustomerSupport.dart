@@ -5,7 +5,9 @@ import '../../data/repository/chat/chat_repository_impl.dart';
 
 class ContactCustomerSupport extends StatefulWidget {
   final String chatID;
-  const ContactCustomerSupport({super.key, required this.chatID});
+  final String customerName;
+  final bool isAdmin;
+  const ContactCustomerSupport({super.key, required this.chatID, required this.customerName, required this.isAdmin});
 
   @override
   State<ContactCustomerSupport> createState() => _ContactCustomerSupportState();
@@ -21,9 +23,15 @@ class _ContactCustomerSupportState extends State<ContactCustomerSupport> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.teal,
-        title: const Text("Customer Support", style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor:const Color.fromRGBO(172, 208, 193, 1),
+        title: const Text("Customer Support", style: TextStyle(color: Colors.black)),
+        iconTheme: const IconThemeData(color: Colors.black),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), // Back arrow icon
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -57,34 +65,67 @@ class _ContactCustomerSupportState extends State<ContactCustomerSupport> {
 
   Widget _buildMessageBubble(Message msg) {
     bool isUser = msg.senderId == userId;
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Column(
-        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Text(
-            msg.senderId,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isUser ? Colors.teal : Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(12),
+    print("${userId}, ${msg.senderId}");
+    if(widget.isAdmin){
+      return Align(
+        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.isAdmin && isUser ? "Admin": widget.customerName ,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            child: Text(
-              msg.text,
-              style: TextStyle(color: isUser ? Colors.white : Colors.black87),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isUser ? Colors.teal : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                msg.text,
+                style: TextStyle(color: isUser ? Colors.white : Colors.black87),
+              ),
             ),
-          ),
-          Text(
-            msg.timestamp.toLocal().toString().substring(11, 16),
-            style: const TextStyle(fontSize: 10, color: Colors.grey),
-          ),
-        ],
-      ),
-    );
+            Text(
+              msg.timestamp.toLocal().toString().substring(11, 16),
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }else{
+      return Align(
+        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              !widget.isAdmin && isUser ? widget.customerName: "Admin" ,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isUser ? Colors.teal : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                msg.text,
+                style: TextStyle(color: isUser ? Colors.white : Colors.black87),
+              ),
+            ),
+            Text(
+              msg.timestamp.toLocal().toString().substring(11, 16),
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
   }
 
   Widget _buildMessageInput() {

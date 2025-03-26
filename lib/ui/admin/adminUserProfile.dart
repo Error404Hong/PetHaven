@@ -69,40 +69,7 @@ class _UserProfileState extends State<Adminuserprofile> {
     });
   }
   void _navigateToSelectChat (){
-    context.go("/selectChat");
-  }
-  void _navigateToChat () async{
-
-    DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
-    DatabaseEvent event = await ref.orderByChild("isClosed").equalTo(false).once();
-    DataSnapshot snapshot = event.snapshot;
-
-    if (snapshot.value == null) {
-      // No open chats exist, create a new one
-      Chat newChat = await chatRepo.createNewChat(userId);
-      context.go("/customer_support", extra: {"chatId": newChat.id});
-      print("No open chat, created new chat: ${newChat.id}");
-      return;
-    }
-
-    Map<dynamic, dynamic> chatData = snapshot.value as Map<dynamic, dynamic>;
-
-    // Find the chat that matches the userId
-    String? existingChatId;
-    chatData.forEach((key, value) {
-      if (value["userId"] == userId) {
-        existingChatId = value["id"];
-      }
-    });
-    print(existingChatId);
-    if (existingChatId != null) {
-      // Open chat exists, navigate to it
-      context.go("/customer_support", extra: existingChatId);
-    } else {
-      // No matching chat, create a new one
-      Chat newChat = await chatRepo.createNewChat(userId);
-      context.go("/customer_support", extra: newChat.id);
-    }
+    context.push("/selectChat");
   }
   Widget build(BuildContext context) {
     return Container(
@@ -159,59 +126,7 @@ class _UserProfileState extends State<Adminuserprofile> {
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
 
-                        child: Row(
-                          children: [
-                            Image.asset('assets/images/calendar-icon.png'),
-                            const SizedBox(width: 15),
-                            const Text(
-                              'My Upcoming Schedules',
-                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        child: Row(
-                          children: [
-                            Image.asset('assets/images/pet-event-icon.png'),
-                            const SizedBox(width: 15),
-                            const Text(
-                              'Manage Organized Event',
-                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                            )
-                          ],
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ManageOrganizedEvents(user: widget.user))
-                          );
-                        },
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min, // Ensures button wraps content
-                          children: [
-                            Text('View', style: TextStyle(color: Color.fromRGBO(0, 139, 139, 1)),),
-                            SizedBox(width: 5), // Space between text and icon
-                            Icon(Icons.navigate_next_rounded, color: Color.fromRGBO(0, 139, 139, 1)),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -255,7 +170,7 @@ class _UserProfileState extends State<Adminuserprofile> {
                             Image.asset('assets/images/customer-service.png'),
                             const SizedBox(width: 15),
                             const Text(
-                              'Contact Customer Support',
+                              'View Customer Support Request',
                               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                             )
                           ],
@@ -263,7 +178,7 @@ class _UserProfileState extends State<Adminuserprofile> {
                       ),
                       TextButton(
                         onPressed:
-                        (userDetails?.role == 3 ? _navigateToSelectChat: _navigateToChat)
+                        _navigateToSelectChat
                         ,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content

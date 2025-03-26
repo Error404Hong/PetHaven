@@ -15,25 +15,35 @@ class ChatRepositoryImpl extends ChatRepository {
   Stream<List<Chat>> getAllChats() {
     return _db.child("chats").onValue.map((event) {
       final dynamic snapshotValue = event.snapshot.value;
+
       if (snapshotValue == null || snapshotValue is! Map<dynamic, dynamic>) {
-        return []; // Return an empty list if data is missing or invalid
+        return []; // Return empty list if no data
       }
 
-      final data = snapshotValue as Map<dynamic, dynamic>;
+      // Convert the snapshot value to a properly typed map
+      final Map<String, dynamic> data = Map<String, dynamic>.from(snapshotValue);
 
       return data.entries.map((entry) {
         final chatData = entry.value;
 
-        if (chatData is Map<dynamic, dynamic>) {
-          print("im trying to get all chat");
+        if (chatData is Map) {
+          try {
+            // Ensure deep conversion of dynamic map values
+            final parsedChatData = Map<String, dynamic>.from(
+                chatData.map((key, value) => MapEntry(key.toString(), value))
+            );
 
-          return Chat.fromMap({...chatData.cast<String, dynamic>(), "id": entry.key});
+            return Chat.fromMap({...parsedChatData, "id": entry.key});
+          } catch (e) {
+            print("Error parsing chat data: $e");
+          }
         }
 
         return null; // Skip invalid entries
       }).whereType<Chat>().toList();
     });
   }
+
 
   @override
   Stream<List<Message>> getMessages(String chatId) {
@@ -65,7 +75,7 @@ class ChatRepositoryImpl extends ChatRepository {
     await _db.child("chats").child(chatId).update({"isClosed": true});
   }
 
-  Future<Chat> createNewChat(String userId) async {
+  Future<Chat> createNewChat(String userId, String? customerName) async {
     String chatId = const Uuid().v4(); // Generate a unique chat ID
 
     Chat newChat = Chat(
@@ -74,6 +84,7 @@ class ChatRepositoryImpl extends ChatRepository {
       isClosed: false,
       createdAt: DateTime.now().toUtc(),
       messages: [],
+      customerName: customerName,
     );
 
     await _db.child("chats").child(chatId).set(newChat.toMap());

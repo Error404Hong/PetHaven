@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:pet_haven/ui/vendor/feedback_container.dart';
 import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
+import '../../data/model/product.dart';
 import '../../data/model/user.dart';
 
 class CheckFeedback extends StatefulWidget {
   final User vendorData;
-  const CheckFeedback({super.key, required this.vendorData});
+  final Product product;
+  const CheckFeedback({super.key, required this.vendorData, required this.product});
 
   @override
   State<CheckFeedback> createState() => _CheckFeedbackState();
 }
 
 class _CheckFeedbackState extends State<CheckFeedback> {
+  double calculateAverageRating() {
+    if (widget.product.reviews.isEmpty) return 0.0; // No reviews case
+    double totalRating = widget.product.reviews.fold(0, (sum, review) => sum + review.starRating);
+    return totalRating / widget.product.reviews.length;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,29 +42,29 @@ class _CheckFeedbackState extends State<CheckFeedback> {
                         color: Colors.grey[700],
                       ),
                     ),
-                    const Text(
-                      '4.0',
-                      style: TextStyle(
+                    Text(
+                      calculateAverageRating().toStringAsFixed(1), // Show 1 decimal place
+                      style: const TextStyle(
                         fontSize: 65,
                         fontWeight: FontWeight.w900,
                         color: Colors.black87,
                       ),
                     ),
-                    const Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.star, color: Colors.amber, size: 30),
-                        Icon(Icons.star, color: Colors.amber, size: 30),
-                        Icon(Icons.star, color: Colors.amber, size: 30),
-                        Icon(Icons.star, color: Colors.amber, size: 30),
-                        Icon(Icons.star,
-                            color: Colors.grey, size: 30), // Half rating effect
-                      ],
+                      children: List.generate(5, (index) {
+                        double avgRating = calculateAverageRating();
+                        return Icon(
+                          index < avgRating.floor() ? Icons.star : (index < avgRating ? Icons.star_half : Icons.star_border),
+                          color: Colors.amber,
+                          size: 30,
+                        );
+                      }),
                     ),
+
                     const SizedBox(height: 10),
                     Text(
-                      "Based on 404 Reviews",
+                      "Based on ${widget.product.reviews.length} Reviews",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -89,16 +96,16 @@ class _CheckFeedbackState extends State<CheckFeedback> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Product Name",
-                          style: TextStyle(
+                        Text(
+                          widget.product.productName,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "\$10.00",
+                          "RM${widget.product.price}",
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[700],
@@ -126,10 +133,9 @@ class _CheckFeedbackState extends State<CheckFeedback> {
               // Sample Reviews (can be mapped from a list)
               Column(
                 children: [
-                  FeedbackContainer(vendorData: widget.vendorData),
-                  FeedbackContainer(vendorData: widget.vendorData),
-                  FeedbackContainer(vendorData: widget.vendorData),
-                  FeedbackContainer(vendorData: widget.vendorData),
+                  if (widget.product.reviews.isEmpty)
+                    const Text("No reviews yet", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  ...widget.product.reviews.map((review) => FeedbackContainer(vendorData: widget.vendorData, review: review)).toList(),
                 ],
               ),
             ],

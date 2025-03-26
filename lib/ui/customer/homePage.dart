@@ -29,6 +29,9 @@ class _CustHomePageState extends State<CustHomePage> {
   EventImplementation eventImpl = EventImplementation();
   UserRepoImpl userRepo = UserRepoImpl();
   ProductImplementation productImpl = ProductImplementation();
+  TextEditingController searchController = TextEditingController();
+  List<Product> allProducts = [];
+  List<Product> searchResults = [];
 
   bool isUserLoading = true;
   user_model.User? userData;
@@ -60,7 +63,13 @@ class _CustHomePageState extends State<CustHomePage> {
       }
     }
   }
-
+  void searchProducts(String query) {
+    setState(() {
+      searchResults = allProducts
+          .where((product) => product.productName.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
   @override
   Widget build(BuildContext context) {
     if (isUserLoading) {
@@ -75,7 +84,17 @@ class _CustHomePageState extends State<CustHomePage> {
       );
     }
 
-    return StreamBuilder<List<Product>>(
+    return
+      Scaffold(
+        backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
+          appBar: CustomAppBar(
+            title: "Product List",
+            subTitle: "Looking for Something?",
+            user: userData!,
+            searchController: searchController,
+            onSearchChanged: searchProducts, // Pass the function
+          ),body:
+      StreamBuilder<List<Product>>(
       stream: productImpl.getAllProducts(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -88,7 +107,8 @@ class _CustHomePageState extends State<CustHomePage> {
 
         List<Product> productList = snapshot.data!;
 
-        return SingleChildScrollView(
+        return
+          SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 18, 15, 10),
             child: Column(
@@ -176,7 +196,7 @@ class _CustHomePageState extends State<CustHomePage> {
           ),
         );
       },
-    );
+    ));
   }
 }
 

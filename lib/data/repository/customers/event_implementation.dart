@@ -126,4 +126,13 @@ class EventImplementation {
       return docs.take(2).toList(); // Return only 2 random documents
     });
   }
+  Future<int> getNumEvent() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("Events").get();
+      return querySnapshot.size; // Returns the number of documents in the collection
+    } catch (e) {
+      print("Error fetching event count: $e");
+      return 0; // Return 0 if there's an error
+    }
+  }
 }

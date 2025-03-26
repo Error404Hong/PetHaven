@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_haven/data/repository/vendors/product_implementation.dart';
 import '../../data/model/product.dart';
+import '../../data/model/review.dart';
 import 'appbar.dart';
 import 'product-box.dart';
 import 'package:pet_haven/data/model/user.dart' as user_model;
@@ -16,7 +17,8 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   ProductImplementation productImpl = ProductImplementation();
-
+  TextEditingController searchController = TextEditingController();
+  List<Product> allProducts = [];
   List<Product> searchResults = [];
   String? selectedCategory = "ALL";
   bool isLoading = false;
@@ -52,7 +54,6 @@ class _ProductListState extends State<ProductList> {
 
     try {
       QuerySnapshot result;
-
       if (selectedCategory == "ALL") {
         result = await FirebaseFirestore.instance.collection('Products').get();
       } else {
@@ -62,23 +63,30 @@ class _ProductListState extends State<ProductList> {
             .get();
       }
 
-      List<Product> finalResults = result.docs.map((doc) => Product(
-        productID: doc.id,
-        productName: doc['productName'],
-        description: doc['description'],
-        category: doc['category'],
-        price: doc['price'],
-        inventoryQuantity: doc['inventoryQuantity'],
-        quantitySold: doc['quantitySold'],
-        vendorID: doc['vendorID'],
-        imagePath: doc['imagePath'],
-      )).toList();
+      List<Product> finalResults = result.docs.map((doc) {
+        List<Review> reviews = (doc['reviews'] as List<dynamic>?)
+            ?.map((review) => Review.fromMap(review as Map<String, dynamic>))
+            .toList() ?? [];
+
+        return Product(
+          productID: doc.id,
+          productName: doc['productName'],
+          description: doc['description'],
+          category: doc['category'],
+          price: doc['price'],
+          inventoryQuantity: doc['inventoryQuantity'],
+          quantitySold: doc['quantitySold'],
+          vendorID: doc['vendorID'],
+          imagePath: doc['imagePath'],
+          reviews: reviews,
+        );
+      }).toList();
 
       setState(() {
-        searchResults = finalResults;
+        allProducts = finalResults; // Store all products
+        searchResults = finalResults; // Initially show all products
         isLoading = false;
       });
-
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -86,6 +94,13 @@ class _ProductListState extends State<ProductList> {
       });
       print("Error: $e");
     }
+  }
+  void searchProducts(String query) {
+    setState(() {
+      searchResults = allProducts
+          .where((product) => product.productName.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
   @override
@@ -96,6 +111,8 @@ class _ProductListState extends State<ProductList> {
         title: "Product List",
         subTitle: "Looking for Something?",
         user: widget.userData,
+        searchController: searchController,
+        onSearchChanged: searchProducts, // Pass the function
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +173,7 @@ class _ProductListState extends State<ProductList> {
                               isExpanded: true,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12), // Adjust padding
+                                contentPadding: EdgeInsets.symmetric(vertical: 12),
                               ),
                               items: categories.map((String item) {
                                 return DropdownMenuItem(
@@ -164,7 +181,7 @@ class _ProductListState extends State<ProductList> {
                                   child: Text(
                                     item,
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis, // Prevents text overflow
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 );
                               }).toList(),
@@ -189,7 +206,7 @@ class _ProductListState extends State<ProductList> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator()) // Show loading indicator
+                  ? const Center(child: CircularProgressIndicator())
                   : errorMessage.isNotEmpty
                   ? Center(child: Text(errorMessage, style: const TextStyle(color: Colors.red)))
                   : searchResults.isEmpty

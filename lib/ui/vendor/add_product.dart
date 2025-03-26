@@ -174,6 +174,7 @@ class _AddProductState extends State<AddProduct> {
           imagePath: imageFilePath,
           quantitySold: quantitySold,
           vendorID: vendorID!,
+          reviews: []
         );
 
         productImpl.addNewProduct(newProduct);

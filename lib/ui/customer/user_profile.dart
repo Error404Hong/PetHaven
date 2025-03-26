@@ -71,9 +71,6 @@ class _UserProfileState extends State<UserProfile> {
       userDetails = userDetail;
     });
   }
-  void _navigateToSelectChat (){
-    context.go("/selectChat");
-  }
   void _navigateToChat () async{
 
       DatabaseReference ref = FirebaseDatabase.instance.ref("chats");
@@ -82,8 +79,12 @@ class _UserProfileState extends State<UserProfile> {
 
       if (snapshot.value == null) {
         // No open chats exist, create a new one
-        Chat newChat = await chatRepo.createNewChat(userId);
-        context.go("/customer_support", extra: {"chatId": newChat.id});
+        Chat newChat = await chatRepo.createNewChat(userId, userDetails?.name);
+        context.push("/customer_support", extra: {
+          "chatId": newChat.id,
+          "customerName": widget.user.name,
+          "isAdmin": false,
+        });
         print("No open chat, created new chat: ${newChat.id}");
         return;
       }
@@ -100,11 +101,19 @@ class _UserProfileState extends State<UserProfile> {
       print(existingChatId);
       if (existingChatId != null) {
         // Open chat exists, navigate to it
-        context.go("/customer_support", extra: existingChatId);
+        context.push("/customer_support", extra: {
+          "chatId": existingChatId,
+          "customerName": widget.user.name,
+          "isAdmin": false,
+        });
       } else {
         // No matching chat, create a new one
-        Chat newChat = await chatRepo.createNewChat(userId);
-        context.go("/customer_support", extra: newChat.id);
+        Chat newChat = await chatRepo.createNewChat(userId, userDetails?.name);
+        context.push("/customer_support", extra: {
+          "chatId": newChat.id,
+          "customerName": widget.user.name,
+          "isAdmin": false,
+        });
       }
   }
   Widget build(BuildContext context) {
@@ -319,7 +328,7 @@ class _UserProfileState extends State<UserProfile> {
                       ),
                       TextButton(
                         onPressed:
-                        (userDetails?.role == 3 ? _navigateToSelectChat: _navigateToChat)
+                        _navigateToChat
                         ,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ensures button wraps content
