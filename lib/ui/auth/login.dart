@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/service/shared_preferences.dart';
 import '../component/custom_auth_painter.dart';
 import '../../data/repository/user/user_repository_impl.dart';
+import '../component/snackbar.dart';
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
 
@@ -44,30 +45,33 @@ class _LoginState extends State<Login> {
     context.go("forgotPassword", extra: email);
   }
 
-  Future<void> login(context) async {
+  Future<void> login(BuildContext context) async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
     try {
       setState(() {
         isLoading = true;
       });
+
       final bool success = await userRepo.login(email, password);
-      // Navigate to admin or dashboard on successful login
-      if(success){
+
+      if (success) {
         await SharedPreference.setIsLoggedIn(true);
+        showSnackbar(context, "Login successful!", Colors.green);
         _navigateToHome();
+      } else {
+        showSnackbar(context, "Incorrect email or password.", Colors.red);
       }
     } catch (e) {
       debugPrint("Error logging in: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed. Please try again.")),
-      );
+      showSnackbar(context, "Login failed. Please try again.", Colors.red);
     } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
+
 
   void _navigateToRegister() {
     context.go("/register");

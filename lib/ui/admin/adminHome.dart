@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_haven/data/repository/vendors/product_implementation.dart';
+
+import '../../data/model/event.dart';
+import '../../data/repository/customers/event_implementation.dart';
 
 class Adminhome extends StatefulWidget {
   const Adminhome({super.key});
@@ -14,92 +18,114 @@ class Adminhome extends StatefulWidget {
 class _AdminhomeState extends State<Adminhome> {
   int event = 0;
   int post = 0;
+  Map<int, double> monthlyData = {};
+  bool isLoading = true; // Loading state
+
   @override
   void initState() {
     super.initState();
+    getNumOfEvent();
+    fetchData();
   }
 
+  EventImplementation event_repo = EventImplementation();
+  ProductImplementation product_repo = ProductImplementation();
+
+  void getNumOfEvent() async {
+    int ListOfEvent = await event_repo.getNumEvent();
+    int listOfProduct = await product_repo.getNumProduct();
+    setState(() {
+      event = ListOfEvent;
+      post = listOfProduct;
+    });
+  }
+
+  void fetchData() async {
+    Map<int, double> data = await product_repo.fetchMonthlyPayments();
+    setState(() {
+      monthlyData = data;
+      print(monthlyData);
+      isLoading = false; // Stop loading after fetching data
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-
+      child: isLoading
+          ? Center(
+        child: CircularProgressIndicator(), // Show loader while fetching
+      )
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BalanceCard(Event: event, Post: post),
+          const Text(
+            "General",
+            style: TextStyle(
+              fontSize: 24, // Increased font size
+              fontWeight: FontWeight.bold, // Bold text
+            ),
+          ),
           SizedBox(height: 20),
-          TransactionChart(),
+          BalanceCard(event: event, post: post),
+          SizedBox(height: 20),
+          const Text(
+            "Monthly Revenue",
+            style: TextStyle(
+              fontSize: 24, // Increased font size
+              fontWeight: FontWeight.bold, // Bold text
+            ),
+          ),
+          SizedBox(height: 20),
+          TransactionChart(monthlyData: monthlyData),
         ],
       ),
     );
   }
 }
-
 class BalanceCard extends StatelessWidget {
-  final int Event;
-  final int Post;
+  final int event;
+  final int post;
 
-  BalanceCard({required this.Event, required this.Post});
+  const BalanceCard({super.key, required this.event, required this.post});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildStatCard("Events", event, Icons.event, Colors.orange),
+        _buildStatCard("Product", post, Icons.shop, Colors.blue),
+      ],
+    );
+  }
 
-          children: [
-
-            SizedBox(
-              height: 120,
-              child:
-              (Event == 0 && Post == 0)?
-              Center(
-                child: Text(
-                  "No Posts and Events",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ):
-            PieChart(
-                PieChartData(
-                  sections: [
-                    PieChartSectionData(
-                      value: Event.toDouble(),
-                      color: Colors.orange,
-                      title: 'Active',
-                    ),
-                    PieChartSectionData(
-                      value: Post.toDouble(),
-                      color: Colors.blue,
-                      title: 'Inactive',
-                    ),
-                  ],
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 30,
-                ),
+  Widget _buildStatCard(String title, int value, IconData icon, Color color) {
+    return SizedBox(
+      width: 180, // Fixed width
+      height: 180, // Fixed height
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: color), // Event/Post Icon
+              const SizedBox(height: 10),
+              Text(
+                "$value",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-            ),
-
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    Text("Event", style: TextStyle(color: Colors.orange)),
-                    Text("$Event", style: TextStyle(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text("Post", style: TextStyle(color: Colors.grey)),
-                    Text("$Post", style: TextStyle(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ],
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -107,7 +133,12 @@ class BalanceCard extends StatelessWidget {
 }
 
 
+
 class TransactionChart extends StatelessWidget {
+  final Map<int, double> monthlyData;
+
+  const TransactionChart({super.key, required this.monthlyData});
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -128,39 +159,26 @@ class TransactionChart extends StatelessWidget {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: 4000, // Adjust based on your data range
-                  barGroups: [
-                    BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 2500, color: Colors.blue, width: 16)]),
-                    BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 3000, color: Colors.blue, width: 16)]),
-                    BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 2000, color: Colors.blue, width: 16)]),
-                    BarChartGroupData(x: 4, barRods: [BarChartRodData(toY: 3500, color: Colors.blue, width: 16)]),
-                    BarChartGroupData(x: 5, barRods: [BarChartRodData(toY: 2800, color: Colors.blue, width: 16)]),
-                    BarChartGroupData(x: 6, barRods: [BarChartRodData(toY: 2930, color: Colors.blue, width: 16)]),
-                  ],
+                  maxY: 4000,
+                  barGroups: monthlyData.entries.map((entry) {
+                    return BarChartGroupData(
+                      x: entry.key,
+                      barRods: [
+                        BarChartRodData(
+                            toY: entry.value,
+                            color: Colors.blue,
+                            width: 16
+                        )
+                      ],
+                    );
+                  }).toList(),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: true, reservedSize: 40),
-                    ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          switch (value.toInt()) {
-                            case 1:
-                              return Text('Jan');
-                            case 2:
-                              return Text('Feb');
-                            case 3:
-                              return Text('Mar');
-                            case 4:
-                              return Text('Apr');
-                            case 5:
-                              return Text('May');
-                            case 6:
-                              return Text('Jun');
-                            default:
-                              return Text('');
-                          }
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                          return Text(months[value.toInt() - 1]);
                         },
                         reservedSize: 30,
                       ),

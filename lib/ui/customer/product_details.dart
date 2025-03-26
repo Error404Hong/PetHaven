@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_haven/ui/customer/purchase_product.dart';
 import '../../data/model/product.dart';
+import '../../data/model/review.dart';
 import '../../data/model/user.dart';
 import 'alternative_app_bar.dart';
 import 'customer_review_box.dart';
@@ -19,7 +20,9 @@ class ProductDetails extends StatefulWidget {
 
 class _ProductDetailsState extends State<ProductDetails> {
   String? vendorName;
-  bool isLoading = true; // Track loading state
+  int _selectedRating = 0;
+  bool isLoading = true;
+  final TextEditingController _reviewController = TextEditingController();// Track loading state
 
   @override
   void initState() {
@@ -52,7 +55,44 @@ class _ProductDetailsState extends State<ProductDetails> {
       isLoading = false; // Stop loading even if there's an error
     });
   }
+  Future<void> submitReview() async {
+    if (_selectedRating == 0 || _reviewController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please provide a rating and review text")),
+      );
+      return;
+    }
 
+    final db = FirebaseFirestore.instance;
+    final productRef = db.collection("Products").doc(widget.productData.productID);
+
+    Review newReview = Review(
+      reviewID: productRef.id,
+      userID: widget.user.id ?? "",
+      userName: widget.user.name,
+      starRating: _selectedRating,
+      reviewText: _reviewController.text.trim(),
+      timestamp: DateTime.now(),
+    );
+
+    try {
+      await productRef.update({
+        "reviews": FieldValue.arrayUnion([newReview.toMap()])
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Review submitted successfully!")),
+      );
+
+      // Clear input fields after submission
+      setState(() {
+        _selectedRating = 0;
+        _reviewController.clear();
+      });
+    } catch (e) {
+      print("Error submitting review: $e");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,10 +213,69 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ],
                   ),
                   const Divider(height: 50),
-                  const Column(
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Write a Review',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+
+// Big Text Box for Review
+                  Container(
+                    width: double.infinity,
+                    height: 120,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade400),
+                    ),
+                    child: TextField(
+                      controller: _reviewController,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Write your review here...",
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+// Star Rating and Submit Button Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: List.generate(5, (index) {
+                          return IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedRating = index + 1;
+                              });
+                            },
+                            icon: Icon(
+                              index < _selectedRating ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                            ),
+                          );
+                        }),
+                      ),
+
+                      ElevatedButton(
+                        onPressed: submitReview, // Call submitReview function
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromRGBO(172, 208, 193, 1),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text("Submit Review"),
+                      ),
+                    ],
+                  ),
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
+                      const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -186,9 +285,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                           SizedBox(height: 10),
                         ],
                       ),
-                      CustomerReviewBox(),
-                      CustomerReviewBox(),
-                      CustomerReviewBox(),
+                      if (widget.productData.reviews.isEmpty)
+                        const Text("No reviews yet", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      ...widget.productData.reviews.map((review) => CustomerReviewBox(review: review)).toList(),
                     ],
                   ),
                   SizedBox(

@@ -7,16 +7,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subTitle;
   final User user;
-  const CustomAppBar({super.key, required this.title, required this.subTitle, required this.user});
+  final TextEditingController searchController;
+  final Function(String) onSearchChanged;
+
+  const CustomAppBar({
+    super.key,
+    required this.title,
+    required this.subTitle,
+    required this.user,
+    required this.searchController,
+    required this.onSearchChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(160), // Adjusted height
+      preferredSize: const Size.fromHeight(190), // Adjusted height
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(20), // Rounded bottom left
-          bottomRight: Radius.circular(20), // Rounded bottom right
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
         child: Container(
           color: const Color.fromRGBO(172, 208, 193, 1),
@@ -61,6 +71,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: TextField(
+                  controller: searchController,
+                  onChanged: onSearchChanged,
                   decoration: InputDecoration(
                     hintText: "Search...",
                     prefixIcon: const Icon(Icons.search, color: Color.fromRGBO(33, 31, 31, 1)),
@@ -81,5 +93,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(190); // Adjusted height
+  Size get preferredSize => const Size.fromHeight(190);
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pet_haven/data/model/review.dart';
 
 class Product {
   String? productID;
@@ -10,6 +11,7 @@ class Product {
   String imagePath;
   int quantitySold;
   String vendorID;
+  List<Review> reviews;
 
   Product({
     this.productID,
@@ -21,6 +23,7 @@ class Product {
     required this.imagePath,
     required this.quantitySold,
     required this.vendorID,
+    required this.reviews,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +37,7 @@ class Product {
       "imagePath": imagePath,
       "quantitySold": quantitySold,
       "vendorID": vendorID,
+      "reviews": reviews.map((review) => review.toMap()).toList(), // Convert to list of maps
     };
   }
 
@@ -48,6 +52,7 @@ class Product {
       imagePath: map["imagePath"] as String,
       quantitySold: map["quantitySold"] as int,
       vendorID: map["vendorID"] as String,
+      reviews: (map["reviews"] as List<dynamic>?)?.map((reviewMap) => Review.fromMap(reviewMap)).toList() ?? [],
     );
   }
 }

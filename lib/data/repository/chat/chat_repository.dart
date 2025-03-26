@@ -6,5 +6,5 @@ abstract class ChatRepository {
   Stream<List<Message>> getMessages(String chatId);
   Future<void> sendMessage(String chatId, String userId, String text);
   Future<void> closeChat(String chatId);
-  Future<void> createNewChat(String userId);
+  Future<void> createNewChat(String userId, String? customerName);
 }

@@ -70,10 +70,22 @@ class NavRouter extends StatelessWidget {
       },
     ),
     GoRoute(path: "/admin", builder: (context, state) => const Home()),
-    GoRoute(path: "/customer_support", builder: (context, state) {
-      final String chatId = state.extra as String;
-      return ContactCustomerSupport(chatID: chatId);
-    }),
+    GoRoute(
+      path: "/customer_support",
+      builder: (context, state) {
+        final Map<String, dynamic> data = state.extra as Map<String, dynamic>;
+
+        final String chatId = data["chatId"] as String;
+        final String customerName = data["customerName"] as String;
+        final bool isAdmin = data["isAdmin"] as bool;
+
+        return ContactCustomerSupport(
+          chatID: chatId,
+          customerName: customerName,
+          isAdmin: isAdmin,
+        );
+      },
+    ),
     GoRoute(path: "/selectChat", builder: (context, state) => const SelectChat())
 
   ];
