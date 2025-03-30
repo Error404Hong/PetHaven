@@ -180,7 +180,9 @@ class _UpdateEventState extends State<UpdateEvent> {
       String startTime = _startTimeController.text.trim();
       String endTime = _endTimeController.text.trim();
       String date = _dateController.text.trim();
-      String imageFilePath = imagePath;
+
+
+      String imageFilePath = imagePath.isNotEmpty ? imagePath : event.imagePath;
 
       // Validate inputs
       setState(() {

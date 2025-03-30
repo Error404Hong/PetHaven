@@ -205,7 +205,7 @@ class _ViewActivityState extends State<ViewActivity> {
                       return const Center(child: Text("No activities available"));
                     }
 
-                    // ✅ Categorize events into "Upcoming" and "Past"
+                    // Categorize events into "Upcoming" and "Past"
                     Map<String, List<Event>> categorizedEvents = categorizeEvents(snapshot.data!);
                     List<Event> upcomingEvents = categorizedEvents["Upcoming"] ?? [];
                     List<Event> pastEvents = categorizedEvents["Past"] ?? [];
@@ -213,7 +213,7 @@ class _ViewActivityState extends State<ViewActivity> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 🟢 Display Upcoming Events
+                        // Display Upcoming Events
                         if (upcomingEvents.isNotEmpty) ...[
                           const Text(
                             "Upcoming Events 🔜",

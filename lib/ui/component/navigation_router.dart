@@ -87,7 +87,6 @@ class NavRouter extends StatelessWidget {
       },
     ),
     GoRoute(path: "/selectChat", builder: (context, state) => const SelectChat())
-
   ];
 
 

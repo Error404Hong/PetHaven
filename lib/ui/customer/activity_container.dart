@@ -31,7 +31,7 @@ class _ActivityContainerState extends State<ActivityContainer> {
           height: 220,
           padding: const EdgeInsets.fromLTRB(15.0, 18.0, 15.0, 15.0),
           decoration: BoxDecoration(
-            color: const Color.fromRGBO(172, 208, 193, 1),
+              color: const Color.fromRGBO(172, 208, 193, 1),
             borderRadius: BorderRadius.circular(10.0), // Uniform radius
           ),
           child: Column(

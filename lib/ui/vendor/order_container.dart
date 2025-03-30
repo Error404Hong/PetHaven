@@ -136,7 +136,7 @@ class _OrderContainerState extends State<OrderContainer> {
                           const Icon(Icons.shopping_bag, size: 20),
                           const SizedBox(width: 6),
                           Text(
-                            "Product: $productName",
+                            "Item: $productName",
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w500),
                           ),
@@ -180,7 +180,6 @@ class _OrderContainerState extends State<OrderContainer> {
             ),
           ),
         ),
-
         SizedBox(height: 22)
       ],
     );

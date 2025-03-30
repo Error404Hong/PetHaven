@@ -26,10 +26,12 @@ class VendorAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 10.0),
           child: GestureDetector(
             onTap: () {
+              if(pageTitle != "Order Management" && pageTitle != "Products Management" && pageTitle != "Edit Profile") {
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => VendorProfile(vendorData: vendorData))
                 );
+              }
             },
             child: const CircleAvatar(
               radius: 18,

@@ -4,6 +4,7 @@ import 'package:pet_haven/data/repository/vendors/product_implementation.dart';
 import 'package:pet_haven/ui/vendor/hor_product_box.dart';
 import 'package:pet_haven/ui/vendor/vendor_app_bar.dart';
 import '../../data/model/product.dart';
+import '../../data/model/review.dart';
 import '../../data/model/user.dart';
 import 'add_product.dart';
 
@@ -50,23 +51,26 @@ class _ProductManagementState extends State<ProductManagement> {
   }
 
   Future<void> searchByCategory() async {
-    if (selectedCategory == null) return;
-
-    if(selectedCategory == "ALL") {
-      clearSearch();
-    }
+    var db = FirebaseFirestore.instance;
 
     setState(() {
       _searchCategoryError = "";
       searchResults.clear(); // Clear previous search results
     });
 
-    var db = FirebaseFirestore.instance;
-
     try {
-      QuerySnapshot result = await db.collection('Products')
-          .where('category', isEqualTo: selectedCategory)
-          .get();
+      QuerySnapshot result;
+
+      if (selectedCategory == "ALL") {
+        result = await db.collection('Products')
+            .where('vendorID', isEqualTo: widget.vendorData.id!)
+            .get();
+      }  else {
+        result = await db.collection('Products')
+            .where('category', isEqualTo: selectedCategory)
+            .where('vendorID', isEqualTo: widget.vendorData.id!)
+            .get();
+      }
 
       List<Product> finalResults = result.docs.map((doc) => Product(
         productID: doc.id,
@@ -78,12 +82,12 @@ class _ProductManagementState extends State<ProductManagement> {
         quantitySold: doc['quantitySold'],
         vendorID: doc['vendorID'],
         imagePath: doc['imagePath'],
-        reviews: doc['reviews']
+        reviews: (doc['reviews'] as List<dynamic>?)?.map((review) => Review.fromMap(review)).toList() ?? [],
       )).toList();
 
       setState(() {
         if (finalResults.isEmpty) {
-          _searchCategoryError = "No products found in $selectedCategory.";
+          _searchCategoryError = "No products found.";
         } else {
           _searchCategoryError = "";
           searchResults = finalResults;
@@ -110,50 +114,37 @@ class _ProductManagementState extends State<ProductManagement> {
     var db = FirebaseFirestore.instance;
 
     try {
-      QuerySnapshot result = await db.collection('Products').get();
+      QuerySnapshot result = await db.collection('Products').where("vendorID", isEqualTo: widget.vendorData.id!).get();
 
       List<Product> finalResults = result.docs
           .where((doc) {
         String productName = doc['productName'].toString().toLowerCase();
         String description = doc['description'].toString().toLowerCase();
 
-        return productName.contains(searchQuery) ||
-            description.contains(searchQuery);
+        return productName.contains(searchQuery) || description.contains(searchQuery);
       })
           .map((doc) => Product(
-          productID: doc.id,
-          productName: doc['productName'],
-          description: doc['description'],
-          category: doc['category'],
-          price: doc['price'],
-          inventoryQuantity: doc['inventoryQuantity'],
-          quantitySold: doc['quantitySold'],
-          vendorID: doc['vendorID'],
-          imagePath: doc['imagePath'],
-          reviews: doc['reviews']
+        productID: doc.id,
+        productName: doc['productName'],
+        description: doc['description'],
+        category: doc['category'],
+        price: doc['price'],
+        inventoryQuantity: doc['inventoryQuantity'],
+        quantitySold: doc['quantitySold'],
+        vendorID: doc['vendorID'],
+        imagePath: doc['imagePath'],
+        reviews: (doc['reviews'] as List<dynamic>?)?.map((review) => Review.fromMap(review)).toList() ?? [],
       ))
           .toList();
 
       setState(() {
-        if (finalResults.isEmpty) {
-          _searchError = "No results found for \"$searchQuery\".";
-        } else {
-          _searchError = "";
-          searchResults = finalResults;
-        }
+        searchResults = finalResults;
       });
-
-      for (var product in searchResults) {
-        print("✅ Found: ${product.productName} at ${product.productID}");
-      }
-
     } catch (e) {
-      print("Error: $e");
-      setState(() {
-        _searchError = "An error occurred while searching.";
-      });
+      print("Error fetching products: $e");
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -257,14 +248,32 @@ class _ProductManagementState extends State<ProductManagement> {
                 child: Column(
                   children: [
                     if (searchResults.isNotEmpty) ...[
-                      const Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "Search Results 🔍",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddProduct(vendorData: widget.vendorData, mode: "add"),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Add Product",
+                              style: TextStyle(
+                                color: Colors.deepPurple,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ],
@@ -278,7 +287,7 @@ class _ProductManagementState extends State<ProductManagement> {
                           return HorProductBox(vendorData: widget.vendorData, product: searchResults[index]);
                         },
                       ),
-                    ] else ...[
+                    ]else ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

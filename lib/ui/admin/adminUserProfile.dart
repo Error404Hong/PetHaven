@@ -170,7 +170,7 @@ class _UserProfileState extends State<Adminuserprofile> {
                             Image.asset('assets/images/customer-service.png'),
                             const SizedBox(width: 15),
                             const Text(
-                              'View Customer Support Request',
+                              'Help Centre',
                               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                             )
                           ],

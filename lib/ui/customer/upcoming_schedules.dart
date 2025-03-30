@@ -20,37 +20,39 @@ class _UpcomingSchedulesState extends State<UpcomingSchedules> {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
       appBar: AlternativeAppBar(pageTitle: "Upcoming Schedules", user: widget.user),
-      body: Padding(
-          padding: const EdgeInsets.fromLTRB(23.0, 28.0, 15.0, 15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Scheduled Activities',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 18),
-              StreamBuilder<List<Event>>(
-                stream: eventImpl.getJoinedEvents(widget.user), // Pass user.id directly
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+      body: SingleChildScrollView(
+        child: Padding(
+            padding: const EdgeInsets.fromLTRB(23.0, 28.0, 15.0, 15.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Scheduled Activities',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 18),
+                StreamBuilder<List<Event>>(
+                  stream: eventImpl.getJoinedEvents(widget.user), // Pass user.id directly
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text("No upcoming activities"));
-                  }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text("No upcoming activities"));
+                    }
 
-                  List<Event> events = snapshot.data!; // Already a List<Event>
+                    List<Event> events = snapshot.data!; // Already a List<Event>
 
-                  return Column(
-                    children: events.map((event) => ActivityBox(user: widget.user!, event: event)).toList(),
-                  );
-                },
-              ),
-            ],
-          )
-      ),
+                    return Column(
+                      children: events.map((event) => ActivityBox(user: widget.user!, event: event)).toList(),
+                    );
+                  },
+                ),
+              ],
+            )
+        ),
+      )
     );
   }
 }

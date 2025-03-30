@@ -55,6 +55,7 @@ class _ProductDetailsState extends State<ProductDetails> {
       isLoading = false; // Stop loading even if there's an error
     });
   }
+
   Future<void> submitReview() async {
     if (_selectedRating == 0 || _reviewController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,8 +85,8 @@ class _ProductDetailsState extends State<ProductDetails> {
         const SnackBar(content: Text("Review submitted successfully!")),
       );
 
-      // Clear input fields after submission
       setState(() {
+        widget.productData.reviews.insert(0, newReview);
         _selectedRating = 0;
         _reviewController.clear();
       });
@@ -93,6 +94,7 @@ class _ProductDetailsState extends State<ProductDetails> {
       print("Error submitting review: $e");
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,7 +215,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ],
                   ),
                   const Divider(height: 50),
-                  const SizedBox(height: 20),
                   const Text(
                     'Write a Review',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
@@ -242,7 +243,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                   const SizedBox(height: 10),
 
-// Star Rating and Submit Button Row
+                  // Star Rating and Submit Button Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -268,10 +269,11 @@ class _ProductDetailsState extends State<ProductDetails> {
                           backgroundColor: const Color.fromRGBO(172, 208, 193, 1),
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         ),
-                        child: const Text("Submit Review"),
+                        child: const Text("Submit Review", style: TextStyle(color: Colors.black),),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -290,6 +292,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                       ...widget.productData.reviews.map((review) => CustomerReviewBox(review: review)).toList(),
                     ],
                   ),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     height: 50,
