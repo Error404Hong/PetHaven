@@ -66,7 +66,7 @@ class _HorProductBoxState extends State<HorProductBox> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "RM ${widget.product.price}",
+                        "RM ${widget.product.price.toStringAsFixed(2)}",
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
