@@ -88,8 +88,8 @@ class _CustHomePageState extends State<CustHomePage> {
       Scaffold(
         backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
           appBar: CustomAppBar(
-            title: "Product List",
-            subTitle: "Looking for Something?",
+            title: "PetHaven",
+            subTitle: "Welcome back ${userData!.name}",
             user: userData!,
             searchController: searchController,
             onSearchChanged: searchProducts, // Pass the function

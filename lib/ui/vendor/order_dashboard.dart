@@ -44,6 +44,7 @@ class _OrderDashboardState extends State<OrderDashboard> {
       var db = FirebaseFirestore.instance;
       QuerySnapshot result = await db.collection('Payment')
           .where('deliveryStatus', isEqualTo: _selectedDeliveryStatus)
+          .where('vendorID', isEqualTo: widget.vendorData.id!)
           .get();
 
       List<Payment> finalResults = result.docs.map((doc) => Payment(

@@ -245,7 +245,20 @@ class _PurchaseProductState extends State<PurchaseProduct> {
                       },
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
+                    const Divider(height: 35, thickness: 1),
+                    const SizedBox(height: 10),
+
+                    const Align(
+                      alignment: Alignment.centerLeft, // Aligns the text to the start
+                      child: Text(
+                        "Recipient Details",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+
 
                     // Recipient Name (Disabled)
                     TextFormField(

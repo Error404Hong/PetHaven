@@ -52,9 +52,9 @@ class _ManageUserState extends State<ManageUser> {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.7,
       child: _isLoading
-          ? Center(child: CircularProgressIndicator()) // Show loader
+          ? const Center(child: CircularProgressIndicator()) // Show loader
           : _users.isEmpty
-          ? Center(child: Text("No users found"))
+          ? const Center(child: Text("No users found"))
           : ListView.builder(
         itemCount: _users.length,
         itemBuilder: (context, index) {
@@ -66,13 +66,13 @@ class _ManageUserState extends State<ManageUser> {
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: Colors.grey[300],
-                child: Icon(Icons.person, color: Colors.black),
+                child: const Icon(Icons.person, color: Colors.black),
               ),
               title: Text(user.name ?? "Unknown",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text("Email: ${user.email}\nRole: ${_getRoleName(user.role)}"),
               trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () => _deleteUser(user.id!),
               ),
             ),

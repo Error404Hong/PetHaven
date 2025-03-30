@@ -35,7 +35,7 @@ class _HostNewActivityState extends State<HostNewActivity> {
   var _endTimeError = "";
   var _descriptionError = "";
   var _locationError = "";
-  var _capacityError ="";
+  var _capacityError = "";
   var _imageError = "";
 
   TimeOfDay _selectedStartTime = TimeOfDay.now();
@@ -91,12 +91,10 @@ class _HostNewActivityState extends State<HostNewActivity> {
       }).catchError((error) {
         print("Error writing image: $error");
       });
-
     } catch (e) {
       print('Error saving image: $e');
     }
   }
-
 
   Future<void> _selectDate() async {
     DateTime? _picked = await showDatePicker(
@@ -155,20 +153,42 @@ class _HostNewActivityState extends State<HostNewActivity> {
       String currentParticipant = "1";
       String? userID = widget.userData.id;
 
-
       setState(() {
-        _eventNameError = eventName.isEmpty ? "Empty event title is not allowed!" : "";
-        _descriptionError = description.isEmpty ? "Empty description is not allowed!" : "";
-        _locationError = location.isEmpty ? "Empty location is not allowed!" : "";
-        _capacityError = capacity.isEmpty ? "Empty capacity is not allowed" : "";
-        _startTimeError = startTime.isEmpty ? "Empty start time is not allowed" : "";
+        _eventNameError =
+            eventName.isEmpty ? "Empty event title is not allowed!" : "";
+        _descriptionError =
+            description.isEmpty ? "Empty description is not allowed!" : "";
+        _locationError =
+            location.isEmpty ? "Empty location is not allowed!" : "";
+        _capacityError =
+            capacity.isEmpty ? "Empty capacity is not allowed" : "";
+        _startTimeError =
+            startTime.isEmpty ? "Empty start time is not allowed" : "";
         _endTimeError = endTime.isEmpty ? "Empty end time is not allowed" : "";
         _dateError = date.isEmpty ? "Empty date is not allowed" : "";
         _imageError = imagePath.isEmpty ? "Empty image is not allowed" : "";
       });
 
-      if(_eventNameError.isEmpty && _descriptionError.isEmpty && _capacityError.isEmpty && _locationError.isEmpty && _startTimeError.isEmpty && _endTimeError.isEmpty && _dateError.isEmpty && _imageError.isEmpty) {
-        Event newEvent = Event(eventName: eventName, date: date, startTime: startTime, endTime: endTime, description: description, location: location, capacity: capacity,participantsCount: currentParticipant, imagePath: imageFilePath, organizerID: organizerID, participants:  userID != null ? [userID] : []);
+      if (_eventNameError.isEmpty &&
+          _descriptionError.isEmpty &&
+          _capacityError.isEmpty &&
+          _locationError.isEmpty &&
+          _startTimeError.isEmpty &&
+          _endTimeError.isEmpty &&
+          _dateError.isEmpty &&
+          _imageError.isEmpty) {
+        Event newEvent = Event(
+            eventName: eventName,
+            date: date,
+            startTime: startTime,
+            endTime: endTime,
+            description: description,
+            location: location,
+            capacity: capacity,
+            participantsCount: currentParticipant,
+            imagePath: imageFilePath,
+            organizerID: organizerID,
+            participants: userID != null ? [userID] : []);
         eventImpl.addNewEvent(newEvent);
         showSnackbar(context, "Event Added Successfully!", Colors.green);
 
@@ -192,7 +212,7 @@ class _HostNewActivityState extends State<HostNewActivity> {
           _imageError = "";
         });
       }
-    } catch(e) {
+    } catch (e) {
       showSnackbar(context, e.toString(), Colors.red);
     }
   }
@@ -201,7 +221,8 @@ class _HostNewActivityState extends State<HostNewActivity> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(247, 246, 238, 1),
-      appBar: AlternativeAppBar(pageTitle: "Organize Event", user: widget.userData),
+      appBar:
+          AlternativeAppBar(pageTitle: "Organize Event", user: widget.userData),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 28, 18, 10),
@@ -220,8 +241,8 @@ class _HostNewActivityState extends State<HostNewActivity> {
                         image: _image != null
                             ? MemoryImage(_image!)
                             : const NetworkImage(
-                          "https://images.unsplash.com/photo-1738626068354-bfede24d8c9c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fGJhbm5lciUyMG1vdW50YWlufGVufDB8fDB8fHww",
-                        ) as ImageProvider<Object>,
+                                "https://images.unsplash.com/photo-1738626068354-bfede24d8c9c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fGJhbm5lciUyMG1vdW50YWlufGVufDB8fDB8fHww",
+                              ) as ImageProvider<Object>,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -232,9 +253,11 @@ class _HostNewActivityState extends State<HostNewActivity> {
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.6), // Background contrast
+                        color: Colors.black
+                            .withOpacity(0.6), // Background contrast
                       ),
-                      padding: const EdgeInsets.all(8), // Padding for better touch area
+                      padding: const EdgeInsets.all(
+                          8), // Padding for better touch area
                       child: IconButton(
                         onPressed: () => selectImage(),
                         icon: const Icon(
@@ -315,7 +338,8 @@ class _HostNewActivityState extends State<HostNewActivity> {
                   border: const OutlineInputBorder(),
                   hintText: 'Enter Event Description',
                   hintStyle: TextStyle(color: Colors.grey[600]),
-                  errorText: _descriptionError.isEmpty ? null : _descriptionError,
+                  errorText:
+                      _descriptionError.isEmpty ? null : _descriptionError,
                 ),
                 maxLines: 5,
               ),
@@ -342,7 +366,9 @@ class _HostNewActivityState extends State<HostNewActivity> {
                                 border: const OutlineInputBorder(),
                                 hintText: 'Enter Location',
                                 hintStyle: TextStyle(color: Colors.grey[600]),
-                                errorText: _locationError.isEmpty ? null : _locationError,
+                                errorText: _locationError.isEmpty
+                                    ? null
+                                    : _locationError,
                               ),
                             ),
                           ],
@@ -365,7 +391,9 @@ class _HostNewActivityState extends State<HostNewActivity> {
                                 border: const OutlineInputBorder(),
                                 hintText: 'Enter Capacity',
                                 hintStyle: TextStyle(color: Colors.grey[600]),
-                                errorText: _capacityError.isEmpty ? null : _capacityError,
+                                errorText: _capacityError.isEmpty
+                                    ? null
+                                    : _capacityError,
                               ),
                             ),
                           ],
@@ -384,7 +412,10 @@ class _HostNewActivityState extends State<HostNewActivity> {
                     backgroundColor: const Color.fromRGBO(172, 208, 193, 1),
                   ),
                   child: const Text('Organize Activity',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black)),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black)),
                 ),
               )
             ],

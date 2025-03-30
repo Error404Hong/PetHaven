@@ -25,7 +25,7 @@ class AlternativeAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 10.0),
           child: GestureDetector(
             onTap: () {
-              if(pageTitle != 'My Profile' && pageTitle != "Edit Profile" && pageTitle != "Upcoming Schedules" && pageTitle != "Reset Password") {
+              if(pageTitle != 'My Profile' && pageTitle != "Edit Profile" && pageTitle != "Upcoming Schedules" && pageTitle != "Reset Password" && pageTitle != "Event Manager"  && pageTitle != "My Activity") {
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => UserProfile(user: user))
