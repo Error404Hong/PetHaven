@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pet_haven/data/repository/customers/event_implementation.dart';
@@ -379,6 +380,8 @@ class _UpdateEventState extends State<UpdateEvent> {
                 Expanded(
                   child: TextField(
                     controller: _capacityController,
+                    keyboardType: TextInputType.number, // Numeric keyboard
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Only allows numbers
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       labelText: 'Capacity',

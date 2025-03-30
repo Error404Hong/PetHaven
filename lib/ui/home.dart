@@ -50,10 +50,27 @@ class _HomeState extends State<Home> {
 
     if (user != null) {
       setState(() => currentUser = user);
+      _listenToUserUpdates();
       await _waitForUserData();
     } else {
       setState(() => isLoading = false);
     }
+  }
+
+  void _listenToUserUpdates() {
+    FirebaseFirestore.instance
+        .collection(user_model.User.tableName)
+        .doc(currentUser!.uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        if (!mounted) return;
+        setState(() {
+          userDetails = user_model.User.fromMap(snapshot.data() as Map<String, dynamic>);
+          _initializePages(); // Refresh UI with updated user data
+        });
+      }
+    });
   }
 
   Future<void> _waitForUserData() async {
@@ -68,7 +85,7 @@ class _HomeState extends State<Home> {
       if (snapshot.exists && snapshot.data() != null) {
         setState(() {
           userDetails = user_model.User.fromMap(snapshot.data() as Map<String, dynamic>);
-          _initializePages(); // Fix: Initialize `_pages` correctly
+          _initializePages(); // Fix: Initialize _pages correctly
           _page = userDetails?.role == 1 ? 2 : 1;
           isLoading = false;
         });

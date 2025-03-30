@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pet_haven/data/model/event.dart';
 import 'package:pet_haven/data/repository/customers/event_implementation.dart';
 import 'package:pet_haven/ui/component/snackbar.dart';
@@ -381,19 +382,18 @@ class _HostNewActivityState extends State<HostNewActivity> {
                           children: [
                             const Text(
                               'Participants Capacity',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w800),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                             ),
                             const SizedBox(height: 10),
                             TextField(
                               controller: _capacityController,
+                              keyboardType: TextInputType.number, // Ensures number keypad
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Only allows digits
                               decoration: InputDecoration(
                                 border: const OutlineInputBorder(),
                                 hintText: 'Enter Capacity',
                                 hintStyle: TextStyle(color: Colors.grey[600]),
-                                errorText: _capacityError.isEmpty
-                                    ? null
-                                    : _capacityError,
+                                errorText: _capacityError.isEmpty ? null : _capacityError,
                               ),
                             ),
                           ],
